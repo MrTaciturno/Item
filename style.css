@@ -1,0 +1,145 @@
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      background: #f3f3f3;
+    }
+    body {
+      width: 100vw;
+      height: 100vh;
+    }
+    .container {
+      display: flex;
+      flex-direction: row;
+      width: 100vw;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    .preview-area {
+      width: 60vw;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eaeaea;
+      border-right: 2px solid #ddd;
+    }
+    .a4-preview {
+      width: 80vw;
+      max-width: 595px;
+      aspect-ratio: 210/297;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+      border-radius: 10px;
+      margin: 24px 0;
+      display: flex;
+      flex-direction: column;
+      padding: 32px;
+      box-sizing: border-box;
+    }
+    .right-panel {
+      width: 40vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-end;
+      padding: 40px 24px 32px 12px;
+      box-sizing: border-box;
+      background: #f8f8f8;
+      position: relative;
+    }
+    .botao-acao {
+      background: #2774ae;
+      color: white;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 18px;
+      padding: 16px 36px;
+      margin-bottom: 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .botao-acao:last-child {
+      margin-bottom: 0;
+    }
+    /* Disco menu */
+    .disco-menu-area {
+      position: absolute;
+      bottom: 32px;
+      right: 24px;
+      z-index: 10;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+    .botao-mais {
+      background: #2CB67D;
+      color: #fff;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: none;
+      font-size: 2.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 12px rgba(44,182,125,0.13);
+      cursor: pointer;
+      transition: background 0.16s;
+      z-index: 20;
+    }
+    .disco-opcoes {
+      position: absolute;
+      bottom: 66px;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .disco-opcoes.ativa {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .opcao-disco {
+      padding: 11px 32px;
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+      color: #333;
+      font-size: 1.0rem;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-align: right;
+      min-width: 110px;
+      font-family: inherit;
+    }
+    .opcao-disco:active {
+      background: #24597c;
+      color: #fff;
+    }
+    @media (max-width: 900px) {
+      .a4-preview {
+        width: 95vw;
+        max-width: 95vw;
+        padding: 7vw;
+      }
+      .preview-area {
+        width: 60vw;
+      }
+      .right-panel {
+        width: 40vw;
+        padding-right: 2vw;
+      }
+    }
+  

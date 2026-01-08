@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="script.js"></script>
+  <link rel="stylesheet" href="style.css">
+  
+  <title>App Documento Horizontal</title>
+  
+</head>
+<body>
+  <div class="container">
+    <!-- Área esquerda: prévia rolável do documento A4 -->
+    <div class="preview-area">
+      <div class="a4-preview" id="a4-preview">
+        <!-- Conteúdo do documento será mostrado aqui -->
+        <div id="doc-content">
+          <h2 style="margin-top:0;">Prévia do Documento</h2>
+          <div id="preview-items">
+            <!-- Elementos incluídos aparecerão aqui -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Área direita: botões de ação e menu disco -->
+    <div class="right-panel">
+      <button class="botao-acao" onclick="adicionarFoto()">Incluir Foto</button>
+      <button class="botao-acao" onclick="adicionarTexto()">Incluir Texto</button>
+      <div class="disco-menu-area">
+        <div style="position:relative;">
+          <button class="botao-mais" onclick="toggleDiscoMenu()" aria-label="Opções rápidas">+</button>
+          <div class="disco-opcoes" id="disco-opcoes">
+            <button class="opcao-disco" onclick="incluirOpcao('Perito')">Perito</button>
+            <button class="opcao-disco" onclick="incluirOpcao('Data')">Data</button>
+            <button class="opcao-disco" onclick="incluirOpcao('Geral')">Geral</button>
+            <!-- Outras opções podem ser inseridas aqui -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Inputs ocultos para upload de foto e texto -->
+  <input type="file" accept="image/*" style="display:none" id="input-foto" onchange="handleFoto(event)">
+ 
+</body>
+</html>
