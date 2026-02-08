@@ -842,11 +842,17 @@ function montaLaudo(){
 
     aL.push("DISPOSIÇÕES PRELIMINARES"); fT.push(1);
     
-    data = "\t Exame pericial realizado para atender requisição relacionada ao Boletim de Ocorrência " +(dadosGerais.bo==""?"BO": dadosGerais.bo) + " cuja delegacia de origem é "+ (dadosGerais.delegacia!=""? dadosGerais.delegacia : "")+ ", tendo como natureza de exame: “Descritivo e fotografação”.    Veículo apresentado na sede dest" + (dadosGerais.Equipe==""? ""+(dadosGerais.Nucleo==""? "a Repartição": "e Núcleo") : "a Equipe") +", pela vítima ou seu representante, dotada de Requisição IC " +(dadosGerais.protocolo==""?"":"(Protocolo: "+dadosGerais.protocolo+")")+ " e Boletim de Ocorrência " +(dadosGerais.bo==""?"":"(BO: "+dadosGerais.bo+")")+ ", para exame de natureza/objetivo: "+(dadosGerais.naturezaDoExame==""? "Constatação de Danos": dadosGerais.naturezaDoExame)+ ".";
+    data = "\t Exame pericial em objeto(s)" 
+    +(dadosGerais.protocolo==""?"": ", referente ao protocolo IC Americana: " +dadosGerais.protocolo)
+    +(dadosGerais.REP==""?"": ", que deu origem ao laudo " +dadosGerais.REP+"/"+data.getFullYear())
+    +(dadosGerais.bo==""?"": ", relacionado(s) ao Boletim de Ocorrência "+dadosGerais.bo)
+    +(dadosGerais.delegacia!=""? ", cuja delegacia de origem é "+dadosGerais.delegacia : "")
+    +", tendo como natureza/objetivo do exame: "+(dadosGerais.naturezaDoExame==""? '"Descrição e fotografação"': +dadosGerais.naturezaDoExame) 
+    + ".";
 
     aL.push(data); fT.push(0);
 
-    aL.push("DO VEÍCULO"); fT.push(1);
+    aL.push("DO(s) OBJETOS(S)"); fT.push(1);
 
     data = "\tConforme ilustrado pelas figuras abaixo, tratava-se de veículo do tipo "+ (dadosGerais.tipo==""? "XXXXXXX": dadosGerais.tipo)+ ", marca/modelo " + (dadosGerais.marca==""? "XXXXXXX": dadosGerais.marca) + ", na cor " + (dadosGerais.cor==""? "XXXXXXX": dadosGerais.cor) + ", ano de fabricação " +(dadosGerais.anoFabricacao==""? "XXXX": dadosGerais.anoFabricacao) + " e placa(s) " + (dadosGerais.placa==""? "XXX0000": dadosGerais.placa) + ".";
 
@@ -1445,6 +1451,3 @@ async function gerarDocx(textoLaudo, formatacao) {
     }
     document.getElementById('gerarDocumentoWord').disabled = false;
 }
-
-
-
