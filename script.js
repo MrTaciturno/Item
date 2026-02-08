@@ -856,6 +856,8 @@ function montaLaudo(){
 
     data = "\tConforme ilustrado pelas figuras abaixo, tratava-se de veículo do tipo "+ (dadosGerais.tipo==""? "XXXXXXX": dadosGerais.tipo)+ ", marca/modelo " + (dadosGerais.marca==""? "XXXXXXX": dadosGerais.marca) + ", na cor " + (dadosGerais.cor==""? "XXXXXXX": dadosGerais.cor) + ", ano de fabricação " +(dadosGerais.anoFabricacao==""? "XXXX": dadosGerais.anoFabricacao) + " e placa(s) " + (dadosGerais.placa==""? "XXX0000": dadosGerais.placa) + ".";
 
+//INCLUIR OS LACRES
+    
     aL.push(data); fT.push(0);
 
     data = '\tQuando dos exames, o referido veículo '+(document.getElementById('danosVeic').value==""? 'não apresentava danos de aspecto recente.': "apresentava os seguintes danos de aspecto recente:");
