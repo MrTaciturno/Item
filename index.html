@@ -38,44 +38,27 @@
     <textarea id="textoAnalisado" placeholder="Informações processadas." name="textoAnalisado" rows="5"></textarea>
 
     <div style="display: flex; gap: 8px; width: 100%; margin-bottom: 5px;">
-        <button id="novoDano" onclick="abrirPopupDano()" style="padding: 10px 30px; font-size: 1.2em; height: 50px; width: 50%;">Novo Dano</button>
-        <div style="display: flex; flex-direction: column; justify-content: space-between; width: 50%; gap: 4px;">
-            <button id="placaArtesanal" style="padding: 5px 6px; font-size: 0.9em; height: 24px; width: 100%; min-width: 0; margin-bottom: 2px;">Placa Artesanal</button>
-            <button id="qrcodeNaoLe" style="padding: 5px 6px; font-size: 0.9em; height: 24px; width: 100%; min-width: 0; margin-bottom: 2px;">QR Code não lê</button>
-            <button id="qrNaoPesquisa" style="padding: 5px 6px; font-size: 0.9em; height: 24px; width: 100%; min-width: 0;">QR não pesquisa</button>
-        </div>
+        <button id="novoLacre" onclick="abrirPopupDano()" style="padding: 10px 30px; font-size: 1.2em; height: 50px; width: 50%;">Novo Lacre</button>
+        <!-- em caso de lacre, caçar se há lacre lido e opção para incluir numeração
+         inserir titulo 2 nos moldes 'a) Do lacre XXXX' -->
+        <button id="novoObjeto" onclick="abrirPopupObjeto()" style="padding: 10px 30px; font-size: 1.2em; height: 50px; width: 50%;">Novo Objeto</button>
+        
     </div>
-    <script>
-    document.getElementById('placaArtesanal').addEventListener('click', function() {
-        const danosVeicTextarea = document.getElementById('danosVeic');
-        // Se já houver texto e não termina com \n
-        if (danosVeicTextarea.value.length > 0 && !danosVeicTextarea.value.endsWith('\n')) {
-            danosVeicTextarea.value += '\n';
-        }
-        danosVeicTextarea.value += 'Placa artesanal para o Beto\n';
-        danosVeicTextarea.dispatchEvent(new Event('input')); // dispara evento caso precise de auto salvamento
-    });
-    document.getElementById('qrcodeNaoLe').addEventListener('click', function() {
-        const danosVeicTextarea = document.getElementById('danosVeic');
-        // Se já houver texto e não termina com \n
-        if (danosVeicTextarea.value.length > 0 && !danosVeicTextarea.value.endsWith('\n')) {
-            danosVeicTextarea.value += '\n';
-        }
-        danosVeicTextarea.value += 'QR Code não lê para o Beto\n';
-        danosVeicTextarea.dispatchEvent(new Event('input')); // dispara evento caso precise de auto salvamento
-    });
-    document.getElementById('qrNaoPesquisa').addEventListener('click', function() {
-        const danosVeicTextarea = document.getElementById('danosVeic');
-        // Se já houver texto e não termina com \n
-        if (danosVeicTextarea.value.length > 0 && !danosVeicTextarea.value.endsWith('\n')) {
-            danosVeicTextarea.value += '\n';
-        }
-        danosVeicTextarea.value += 'QR não pesquisa para o Beto\n';
-        danosVeicTextarea.dispatchEvent(new Event('input')); // dispara evento caso precise de auto salvamento
-    });
-    </script>
 
-    
+    <div id="popupLacre" class="popup">
+        
+    </div>
+    <div id="popupObjeto" class="popup">
+        <h3>Objeto</h3>
+
+        <div>
+            <input type="checkbox" id="faca"> <label for="faca">Faca</label><br>
+            <input type="checkbox" id="folha"> <label for="folha">Folha</label><br>
+            
+        </div>
+        <button onclick="finalizarObjeto()" style="margin-top: 10px;">Próximo</button>
+    </div>
+  
     <div id="popupTipoDano" class="popup">
         <h3>Tipo de Dano</h3>
 

@@ -176,6 +176,14 @@ function abrirPopupDano() {
     document.getElementById('popupTipoDano').style.display = 'block';
 }
 
+function abrirPopupObjeto() {
+    document.getElementById('popupObjeto').style.display = 'block';
+}
+
+function finalizarObjeto() {
+    document.getElementById('popupObjeto').style.display = 'none';
+}
+
 function proximoOrientacao() {
     document.getElementById('popupTipoDano').style.display = 'none';
     document.getElementById('popupOrientacao').style.display = 'block';
