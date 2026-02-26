@@ -862,33 +862,33 @@ function montaLaudo(){
 
     aL.push("DO(s) OBJETOS(S)"); fT.push(1);
 
-    data = "\tConforme ilustrado pelas figuras abaixo, tratava-se de veículo do tipo "+ (dadosGerais.tipo==""? "XXXXXXX": dadosGerais.tipo)+ ", marca/modelo " + (dadosGerais.marca==""? "XXXXXXX": dadosGerais.marca) + ", na cor " + (dadosGerais.cor==""? "XXXXXXX": dadosGerais.cor) + ", ano de fabricação " +(dadosGerais.anoFabricacao==""? "XXXX": dadosGerais.anoFabricacao) + " e placa(s) " + (dadosGerais.placa==""? "XXX0000": dadosGerais.placa) + ".";
+    data = "\t"+document.getElementById('facaCorpo').textContent+" ";
 
 //INCLUIR OS LACRES
     
     aL.push(data); fT.push(0);
 
-    data = '\tQuando dos exames, o referido veículo ';
-    aL.push(data); fT.push(0);
+    // data = '\tQuando dos exames, o referido veículo ';
+    // aL.push(data); fT.push(0);
     
 
-    if (document.getElementById('danosVeic').value!=""){
-        let linhasDanosVeic = document.getElementById('danosVeic').value.split('\n');
-        for (let linhaDanoVeic of linhasDanosVeic) {
-            if (linhaDanoVeic!=""){
-                aL.push(linhaDanoVeic);
-                fT.push(3);
-            }
-        }
-    }
+    // if (document.getElementById('danosVeic').value!=""){
+    //     let linhasDanosVeic = document.getElementById('danosVeic').value.split('\n');
+    //     for (let linhaDanoVeic of linhasDanosVeic) {
+    //         if (linhaDanoVeic!=""){
+    //             aL.push(linhaDanoVeic);
+    //             fT.push(3);
+    //         }
+    //     }
+    // }
 
-    if (document.getElementById('testesVeic').value==""){
-        aL.push('\tOs seus sistemas de segurança para o tráfego (freio, direção e elétrico) se encontravam articulados e atuantes, quando dos exames. Pneumáticos em estado regular.');
-        fT.push(0);
-    }else{
-        aL.push('\t' + document.getElementById('testesVeic').value);
-        fT.push(0);
-    }
+    // if (document.getElementById('testesVeic').value==""){
+    //     aL.push('\tOs seus sistemas de segurança para o tráfego (freio, direção e elétrico) se encontravam articulados e atuantes, quando dos exames. Pneumáticos em estado regular.');
+    //     fT.push(0);
+    // }else{
+    //     aL.push('\t' + document.getElementById('testesVeic').value);
+    //     fT.push(0);
+    // }
 
     aL.push("DO LEVANTAMENTO FOTOGRÁFICO"); fT.push(1);
 

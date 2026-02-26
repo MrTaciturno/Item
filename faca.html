@@ -42,57 +42,178 @@
 <!-- 
     <p>01 (uma) faca de cozinha; usada; apresentando oxidação na lâmina e sujidades; marca/modelo “Tramontina”; com lâmina pontiaguda e de gume afiado; de cabo em polímero, dotado de 3 rebites metálicos; de comprimento total de 27,5cm e de lâmina de comprimento de 15,3cm com largura máxima de 3,5cm; de massa de 82,6g. <br>      A faca, por constituir-se essencialmente de lâmina metálica, tinha condições de produzir ferimentos no combate a curta distância e na luta corpo a corpo e poderia ser utilizada como instrumento de intimidação (ameaça).</p> -->
     
-    <p style="text-align:justify;">
-        01 (uma) <span id="tipoFaca" style="text-decoration: underline; color: blue; cursor: pointer;">faca de cozinha</span>; usada; apresentando oxidação na lâmina e sujidades; marca/modelo “Tramontina”; com lâmina pontiaguda e de gume afiado; de cabo em polímero, dotado de 3 rebites metálicos; de comprimento total de 27,5cm e de lâmina de comprimento de 15,3cm com largura máxima de 3,5cm; de massa de 82,6g. <br>
+    <p id="facaCorpo" style="text-align:justify;">
+        <span id="qttObjeto" style="text-decoration: underline; color: rgb(255, 0, 234); cursor: pointer;">01 (uma)</span>
+ <span id="tipoObjeto" style="text-decoration: underline; color: blue; cursor: pointer;">faca de cozinha</span>;
+ <span id="novoUsadoObjeto" style="text-decoration: underline; color: blue; cursor: pointer;">usada</span>;
+ <span id="caracteristicasObjeto" style="text-decoration: underline; color: blue; cursor: pointer;">apresentando oxidação na lâmina e sujidades;
+ marca/modelo “Tramontina”;
+ com lâmina pontiaguda e de gume afiado;
+ de cabo em polímero,
+ dotado de 3 rebites metálicos;
+ de comprimento total de 27,5cm e
+ de lâmina de comprimento de 15,3cm
+ com largura máxima de 3,5cm;
+ de massa de 82,6g.</span> <br>
         A faca, por constituir-se essencialmente de lâmina metálica, tinha condições de produzir ferimentos no combate a curta distância e na luta corpo a corpo e poderia ser utilizada como instrumento de intimidação (ameaça).
     </p>
 
+
+    
     <!-- Modal Popup HTML -->
-    <div id="popupTipoFaca" style="display:none; position: fixed; z-index: 9999; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.4); align-items: center; justify-content: center;">
+    <div id="popupTipoObjeto" style="display:none; position: fixed; z-index: 9999; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.4); align-items: center; justify-content: center;">
       <div style="background:#fff; padding:26px 20px 20px 20px; border-radius:8px; min-width:260px; max-width:90vw; box-shadow:0 3px 16px rgba(0,0,0,0.35); position:relative;">
-        <span id="fecharPopupTipoFaca" style="position: absolute; top: 10px; right: 15px; font-size: 1.3em; color: #888; cursor: pointer;">&times;</span>
+        <span id="fecharPopupTipoObjeto" style="position: absolute; top: 10px; right: 15px; font-size: 1.3em; color: #888; cursor: pointer;">&times;</span>
         <div style="font-size:1em; margin-bottom:18px;">Escolha o tipo da faca:</div>
-        <button class="opcaoFaca" data-value="faca de cozinha" style="display:block;width:100%;margin-bottom:4px;padding:8px;font-size:1em;">Faca de cozinha</button>
-        <button class="opcaoFaca" data-value="facão" style="display:block;width:100%;margin-bottom:4px;padding:8px;font-size:1em;">Facão</button>
-        <button class="opcaoFaca" data-value="faca de pão" style="display:block;width:100%;margin-bottom:4px;padding:8px;font-size:1em;">Faca de pão</button>
-        <button class="opcaoFaca" data-value="faca de serra" style="display:block;width:100%;margin-bottom:4px;padding:8px;font-size:1em;">Faca de serra</button>
-        <button class="opcaoFaca" data-value="faca de caça" style="display:block;width:100%;margin-bottom:4px;padding:8px;font-size:1em;">Faca de caça</button>
+        <button class="opcaoTipoObjeto" data-value="faca de cozinha" style="display:block;width:100%;margin-bottom:4px;padding:8px;font-size:1em;">Faca de cozinha</button>
+        <button class="opcaoTipoObjeto" data-value="facão" style="display:block;width:100%;margin-bottom:4px;padding:8px;font-size:1em;">Facão</button>
+        <button class="opcaoTipoObjeto" data-value="faca de pão" style="display:block;width:100%;margin-bottom:4px;padding:8px;font-size:1em;">Faca de pão</button>
+        <button class="opcaoTipoObjeto" data-value="faca de serra" style="display:block;width:100%;margin-bottom:4px;padding:8px;font-size:1em;">Faca de serra</button>
+        <button class="opcaoTipoObjeto" data-value="faca de caça" style="display:block;width:100%;margin-bottom:4px;padding:8px;font-size:1em;">Faca de caça</button>
+      </div>
+    </div>
+
+    <div id="popupqttObjeto" style="display:none; position: fixed; z-index: 9999; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.4); align-items: center; justify-content: center;">
+      <div style="background:#fff; padding:26px 20px 20px 20px; border-radius:8px; min-width:260px; max-width:90vw; box-shadow:0 3px 16px rgba(0,0,0,0.35); position:relative;">
+        <span id="fecharPopupqttObjeto" style="position: absolute; top: 10px; right: 15px; font-size: 1.3em; color: #888; cursor: pointer;">&times;</span>
+      <div style="font-size:1em; margin-bottom:14px;">
+        Digite a quantidade:
+      </div>
+      
+      <script> // função para abrir o popup da quantidade do objeto e limpar o input
+        function abrirPopupqttObjeto() {
+          document.getElementById('popupqttObjeto').style.display = 'flex';
+          document.getElementById('inputqttObjeto').focus();
+          document.getElementById('inputqttObjeto').value = '';
+          document.getElementById('inputqttObjeto').dispatchEvent(new Event('input'));
+        }
+      </script>
+      <input type="text" id="inputqttObjeto"
+             style="width:90%; padding:8px; font-size:1.1em; margin-bottom:12px; text-align:center;"
+             pattern="\d*" inputmode="numeric" maxlength="6" autocomplete="off"
+             placeholder="Apenas números"
+             oninput="this.value=this.value.replace(/\D/g,'')"
+             onclick="abrirPopupqttObjeto()">
+      <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:7px; margin-bottom:14px;">
+        <button type="button" class="btn-qtd-rapida" data-num="1" style="padding:10px; font-size:1.1em;">1</button>
+        <button type="button" class="btn-qtd-rapida" data-num="2" style="padding:10px; font-size:1.1em;">2</button>
+        <button type="button" class="btn-qtd-rapida" data-num="3" style="padding:10px; font-size:1.1em;">3</button>
+        <button type="button" class="btn-qtd-rapida" data-num="4" style="padding:10px; font-size:1.1em;">4</button>
+        <button type="button" class="btn-qtd-rapida" data-num="5" style="padding:10px; font-size:1.1em;">5</button>
+        <button type="button" class="btn-qtd-rapida" data-num="6" style="padding:10px; font-size:1.1em;">6</button>
+        <button type="button" class="btn-qtd-rapida" data-num="7" style="padding:10px; font-size:1.1em;">7</button>
+        <button type="button" class="btn-qtd-rapida" data-num="8" style="padding:10px; font-size:1.1em;">8</button>
+        <button type="button" class="btn-qtd-rapida" data-num="9" style="padding:10px; font-size:1.1em;">9</button>
+        <div></div>
+        <button type="button" class="btn-qtd-rapida" data-num="0" style="padding:10px; font-size:1.1em;">0</button>
+        <button type="button" id="btn-qtd-apagar" style="padding:10px; font-size:1.1em;">←</button>
+      </div>
+      <button type="button" id="btnConfirmarqttObjeto" style="width:100%;padding:9px;font-size:1em;background:#2196f3;color:#fff;border:none;border-radius:5px;">Confirmar</button>
+      <script>
+        // Código do popup quantidade (já dentro do bloco script principal)
+        const inputqttObjeto = document.getElementById('inputqttObjeto');
+        const btnsQtdRapida = document.querySelectorAll('.btn-qtd-rapida');
+        const btnConfirmarqttObjeto = document.getElementById('btnConfirmarqttObjeto');
+        const btnApagar = document.getElementById('btn-qtd-apagar');
+
+        btnsQtdRapida.forEach(function(btn){
+          btn.addEventListener('click', function(){
+            const val = btn.getAttribute('data-num');
+            // Limite de 6 caracteres mostra até 999999
+            if (inputqttObjeto.value.length < 6) {
+              inputqttObjeto.value += val;
+              inputqttObjeto.dispatchEvent(new Event('input'));
+            }
+            inputqttObjeto.focus();
+          });
+        });
+
+        btnApagar.addEventListener('click', function(){
+          inputqttObjeto.value = inputqttObjeto.value.slice(0, -1);
+          inputqttObjeto.dispatchEvent(new Event('input'));
+          inputqttObjeto.focus();
+        });
+
+        btnConfirmarqttObjeto.addEventListener('click', function(){
+          let val = inputqttObjeto.value.replace(/\D/g,'');
+          if (!val) return;
+          qttObjeto.innerHTML = (val.length === 1 ? "0" + val : val) + (val === "1" ? " (uma)" : " (" + val.extenso() + ")");
+          popupqttObjeto.style.display = 'none';
+        });
+
+        // Também aceita confirmar ao pressionar Enter no input
+        inputqttObjeto.addEventListener('keydown', function(e){
+          if (e.key === 'Enter') {
+            btnConfirmarqttObjeto.click();
+          }
+        });
+
+        // abre o popup da quantidade do objeto
+        qttObjeto.addEventListener('click', function(){
+          abrirPopupqttObjeto();
+        });
+      </script>
+      
       </div>
     </div>
     <script>
-      const spanTipoFaca = document.getElementById('tipoFaca');
-      const popupTipoFaca = document.getElementById('popupTipoFaca');
-      const fecharPopupTipoFaca = document.getElementById('fecharPopupTipoFaca');
-      const opcoesFaca = document.querySelectorAll('.opcaoFaca');
+      const spanTipoObjeto = document.getElementById('tipoObjeto');
+      const popupTipoObjeto = document.getElementById('popupTipoObjeto');
+      const fecharPopupTipoObjeto = document.getElementById('fecharPopupTipoObjeto');
+      const opcoesTipoObjeto = document.querySelectorAll('.opcaoTipoObjeto');
+      const qttObjeto = document.getElementById('qttObjeto');
+      const popupqttObjeto = document.getElementById('popupqttObjeto');
+      const fecharPopupqttObjeto = document.getElementById('fecharPopupqttObjeto');
+
+
+      qttObjeto.addEventListener('click', function(e) {
+        popupqttObjeto.style.display = 'flex';
+      });
+
+      fecharPopupqttObjeto.addEventListener('click', function(e){
+        popupqttObjeto.style.display = 'none';
+      });
+
+      popupqttObjeto.addEventListener('click', function(e) {
+        if (e.target === popupqttObjeto) {
+          popupqttObjeto.style.display = 'none';
+        }
+      });
+
+
+
+      document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') popupqttObjeto.style.display = 'none';
+      });
 
       // Abrir modal ao clicar no texto
-      spanTipoFaca.addEventListener('click', function(e) {
-        popupTipoFaca.style.display = 'flex';
+      spanTipoObjeto.addEventListener('click', function(e) {
+        popupTipoObjeto.style.display = 'flex';
       });
 
       // Fechar ao clicar em fechar (X)
-      fecharPopupTipoFaca.addEventListener('click', function(e){
-        popupTipoFaca.style.display = 'none';
+      fecharPopupTipoObjeto.addEventListener('click', function(e){
+        popupTipoObjeto.style.display = 'none';
       });
 
       // Fechar ao clicar fora
-      popupTipoFaca.addEventListener('click', function(e) {
-        if (e.target === popupTipoFaca) {
-          popupTipoFaca.style.display = 'none';
+      popupTipoObjeto.addEventListener('click', function(e) {
+        if (e.target === popupTipoObjeto) {
+          popupTipoObjeto.style.display = 'none';
         }
       });
 
       // Escolher opção
-      opcoesFaca.forEach(function(botao) {
+      opcoesTipoObjeto.forEach(function(botao) {
         botao.addEventListener('click', function() {
-          spanTipoFaca.textContent = this.getAttribute('data-value');
-          popupTipoFaca.style.display = 'none';
+          spanTipoObjeto.textContent = this.getAttribute('data-value');
+          popupTipoObjeto.style.display = 'none';
         });
       });
 
       // Fechar modal no ESC
       document.addEventListener('keydown', function(e){
-        if (e.key === 'Escape') popupTipoFaca.style.display = 'none';
+        if (e.key === 'Escape') popupTipoObjeto.style.display = 'none';
       });
 
     
