@@ -868,7 +868,7 @@ function montaLaudo(){
     
     aL.push(data); fT.push(0);
 
-    data = '\tQuando dos exames, o referido veículo '+(document.getElementById('danosVeic').value==""? 'não apresentava danos de aspecto recente.': "apresentava os seguintes danos de aspecto recente:");
+    data = '\tQuando dos exames, o referido veículo ';
     aL.push(data); fT.push(0);
     
 
