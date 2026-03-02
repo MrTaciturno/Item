@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <title>Laudos de Vistoria</title>
+    <title>Laudos de Peças</title>
     <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
@@ -36,9 +36,187 @@
     
     <textarea id="textoAnalisado" placeholder="Informações processadas." name="textoAnalisado" rows="5"></textarea>
 
+    
+    <h1>0. Cabeçalho</h1>
+    <textarea id="cabecalhoDoLaudo" name="cabecalhoDoLaudo" rows="6"></textarea>
+    
+    
+    <div style="margin-bottom: 6px;">
+        <div style="display: inline-flex; width: 100%; padding: 2px;">
+      <button id="dataExame" style="padding: 10px 30px; font-size: 1.2em; height: 50px; margin: 5px 0; width: 100%;">
+            Data do Exame
+        </button>
+      <button id="protocoloExame" style="padding: 10px 30px; font-size: 1.2em; height: 50px; margin: 5px 0; width: 100%;">
+          Protocolo 
+      </button>
+      <button id="numeroLaudo" style="padding: 10px 30px; font-size: 1.2em; height: 50px; margin: 5px 0; width: 100%;">
+        Laudo 
+    </button>
+    
+    </div>
+    <!-- Popup/Modal para editar o protocolo -->
+    <div id="popupProtocoloLaudo" style="display:none; position: fixed; z-index: 9999; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.3); align-items:center; justify-content:center;">
+      <div style="background:#fff; padding:24px 22px 22px 22px; border-radius:6px; min-width:240px; max-width:92vw; box-shadow:0 3px 16px rgba(0,0,0,.35); position:relative;">
+        <span id="fecharPopupProtocoloLaudo" style="position:absolute; top:10px; right:15px; font-size:1.3em; color:#888; cursor:pointer;">&times;</span>
+        <div style="font-size:1em; margin-bottom:12px;">Digite o número do protocolo:</div>
+        <input id="inputProtocoloLaudo" type="text" style="font-size:1em; padding:6px 9px; margin-bottom:14px; width:91%;">
+        <br>
+        <button id="salvarProtocoloLaudo" style="padding:7px 22px; font-size:1em;">Salvar</button>
+      </div>
+    </div>
+    <script>
+      // Elementos para o protocolo
+      const protocoloExame = document.getElementById('protocoloExame');
+      const popupProtocolo = document.getElementById('popupProtocoloLaudo');
+      const fecharPopupProtocolo = document.getElementById('fecharPopupProtocoloLaudo');
+      const inputProtocolo = document.getElementById('inputProtocoloLaudo');
+      const btnSalvarProtocolo = document.getElementById('salvarProtocoloLaudo');
 
+      // Ao clicar no botão, abrir popup
+      protocoloExame.addEventListener('click', () => {
+
+        popupProtocolo.style.display = 'flex';
+        inputProtocolo.focus();
+      });
+
+      // Fechar popup ao clicar no X
+      fecharPopupProtocolo.addEventListener('click', () => {
+        popupProtocolo.style.display = 'none';
+      });
+
+      // Fechar popup por clique fora da caixa
+      popupProtocolo.addEventListener('mousedown', function(e) {
+        if (e.target === popupProtocolo) popupProtocolo.style.display = 'none';
+      });
+
+      // Salvar novo protocolo ao clicar no botão
+      btnSalvarProtocolo.addEventListener('click', () => {
+        let novoValor = inputProtocolo.value.trim();
+        if (novoValor) {
+
+          document.getElementById('cabecalhoDoLaudo').value = document.getElementById('cabecalhoDoLaudo').value.replace(/[Vv]\d{5}-\d{2}/, novoValor.toUpperCase());
+        }
+        popupProtocolo.style.display = 'none';
+      });
+
+      // Permite Enter para aceitar
+      inputProtocolo.addEventListener('keydown', function(e) {
+        if (e.key === "Enter") {
+          btnSalvarProtocolo.click();
+        }
+      });
+
+      
+    </script>
+    <!-- Popup/Modal para editar a data -->
+    <div id="popupDataLaudo" style="display:none; position: fixed; z-index: 9999; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.3); align-items:center; justify-content:center;">
+      <div style="background:#fff; padding:24px 22px 22px 22px; border-radius:6px; min-width:240px; max-width:92vw; box-shadow:0 3px 16px rgba(0,0,0,.35); position:relative;">
+        <span id="fecharPopupDataLaudo" style="position:absolute; top:10px; right:15px; font-size:1.3em; color:#888; cursor:pointer;">&times;</span>
+        <div style="font-size:1em; margin-bottom:12px;">Escolha a data do laudo:</div>
+        <input id="inputDataLaudo" type="date" style="font-size:1em; padding:6px 9px; margin-bottom:14px; width:91%;">
+        <br>
+        <button id="salvarDataLaudo" style="padding:7px 22px; font-size:1em;">Salvar</button>
+      </div>
+    </div>
+    <script>
+      // Util para exibir a data extensa
+      function formatarDataExtenso(dataISO) {
+        if (!dataISO) return "";
+        const meses = [
+          "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+          "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
+        ];
+        const partes = dataISO.split("-");
+        if (partes.length !== 3) return dataISO;
+        const ano = partes[0];
+        const mes = parseInt(partes[1], 10) - 1;
+        const dia = parseInt(partes[2], 10);
+        return dia + " de " + meses[mes] + " de " + ano;
+      }
+
+      // Elementos
+      const dataExame = document.getElementById('dataExame');
+      const popupData = document.getElementById('popupDataLaudo');
+      const fecharPopupData = document.getElementById('fecharPopupDataLaudo');
+      const inputData = document.getElementById('inputDataLaudo');
+      const botaoSalvar = document.getElementById('salvarDataLaudo');
+
+      // Valor inicial
+      let dataPadraoISO = "2026-03-01";
+
+      // Clique para abrir popup
+      dataExame.addEventListener('click', () => {
+        // Pega a data do textarea do cabeçalho
+        let cabecalho = document.getElementById('cabecalhoDoLaudo');
+        let textoCabecalho = cabecalho ? cabecalho.value : '';
+        let padrao = /Em (\d{1,2}) de ([^\s]+) de (\d{4})/;
+        let match = textoCabecalho.match(padrao);
+        let d, m, a;
+        if (match) {
+          d = match[1].padStart(2,"0"); 
+          a = match[3];
+          let meses = [
+            "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+            "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
+          ];
+          m = (meses.indexOf(match[2].toLowerCase())+1).toString().padStart(2,"0");
+          inputData.value = `${a}-${m}-${d}`;
+        } else {
+          inputData.value = dataPadraoISO;
+        }
+        popupData.style.display = 'flex';
+      });
+
+      fecharPopupData.addEventListener('click', () => {
+        popupData.style.display = 'none';
+      });
+
+      popupData.addEventListener('click', function(e) {
+        if (e.target === popupData) popupData.style.display = 'none';
+      });
+
+      document.addEventListener('keydown', function(e){
+        if (popupData.style.display !== 'none' && e.key === 'Escape') {
+          popupData.style.display = 'none';
+        }
+      });
+
+      botaoSalvar.addEventListener('click', () => {
+        let dataSelecionada = inputData.value; // yyyy-mm-dd
+        
+        popupData.style.display = 'none';
+      });
+
+
+    // Atualiza o textarea do cabeçalho com a nova data ao salvar
+    botaoSalvar.addEventListener('click', () => {
+      let dataSelecionada = inputData.value; // yyyy-mm-dd
+      if (dataSelecionada) {
+        
+        // Atualiza automaticamente o campo de cabeçalho com a nova data
+        let cabecalho = document.getElementById('cabecalhoDoLaudo');
+        if (cabecalho) {
+          let dataTexto = formatarDataExtenso(dataSelecionada);
+          // Substitui a data no texto do cabeçalho (procurando padrão antigo de data)
+          cabecalho.value = cabecalho.value.replace(/Em \d{1,2} de [^\s]+ de \d{4}/, 'Em ' + dataTexto);
+        }
+      }
+      popupData.style.display = 'none';
+    });
+    </script>
 
     
+    <h1>1. Objetivo</h1>
+    <textarea id="objetivoDoLaudo" data-value="dasda sd" name="objetivoDoLaudo" rows="4"></textarea>
+
+    <h1>2. Do(s) Objeto(s) e dos Exames</h1>
+    <textarea id="objetosDoLaudo"  name="objetosDoLaudo" rows="5"></textarea>
+
+    <h1>3. Das Considerações Finais</h1>
+    <textarea id="consideracoesFinaisDoLaudo"  name="consideracoesFinaisDoLaudo" rows="7"></textarea>
+    
+
+
 <!-- 
     <p>01 (uma) faca de cozinha; usada; apresentando oxidação na lâmina e sujidades; marca/modelo “Tramontina”; com lâmina pontiaguda e de gume afiado; de cabo em polímero, dotado de 3 rebites metálicos; de comprimento total de 27,5cm e de lâmina de comprimento de 15,3cm com largura máxima de 3,5cm; de massa de 82,6g. <br>      A faca, por constituir-se essencialmente de lâmina metálica, tinha condições de produzir ferimentos no combate a curta distância e na luta corpo a corpo e poderia ser utilizada como instrumento de intimidação (ameaça).</p> -->
     
