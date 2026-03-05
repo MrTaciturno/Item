@@ -54,7 +54,123 @@
     </button>
     
     </div>
-    <!-- Popup/Modal para editar o protocolo -->
+    <!-- Popup/Modal para editar o protocolo (melhorado) -->
+    <div id="popupProtocoloLaudo" style="display:none; position:fixed; z-index: 9999; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.3); align-items:center; justify-content:center;">
+      <div style="background:#fff; padding:24px 22px 22px 22px; border-radius:6px; min-width:270px; max-width:92vw; box-shadow:0 3px 16px rgba(0,0,0,.35); position:relative;">
+        <span id="fecharPopupProtocoloLaudo" style="position:absolute; top:10px; right:15px; font-size:1.3em; color:#888; cursor:pointer;">&times;</span>
+        <div style="font-size:1em; margin-bottom:12px;">Digite o número do protocolo:</div>
+        <div style="display:flex; align-items:center; margin-bottom:14px;">
+          <span style="font-size:1.15em;font-weight:bold;margin-right:5px;">P</span>
+          <input 
+            id="inputProtocoloDigitos" 
+            type="number" 
+            min="0" 
+            max="99999" 
+            placeholder="00000"
+            style="font-size:1em; padding:6px 7px; width:65px; margin-right:7px; text-align:right;" 
+            maxlength="5"
+          >
+          <span style="margin:0 6px 0 3px; font-size:1.1em; color:#333;">-</span>
+          <input 
+            id="inputProtocoloAno" 
+            type="number" 
+            min="0" 
+            max="99" 
+            value="26" 
+            style="font-size:1em; padding:6px 7px; width:38px; text-align:right;" 
+            maxlength="2"
+          >
+        </div>
+        <button id="salvarProtocoloLaudo" style="padding:7px 22px; font-size:1em;">Salvar</button>
+      </div>
+    </div>
+    <script>
+      // Elementos para o protocolo
+      const protocoloExame = document.getElementById('protocoloExame');
+      const popupProtocolo = document.getElementById('popupProtocoloLaudo');
+      const fecharPopupProtocolo = document.getElementById('fecharPopupProtocoloLaudo');
+      const inputProtocoloDigitos = document.getElementById('inputProtocoloDigitos');
+      const inputProtocoloAno = document.getElementById('inputProtocoloAno');
+      const btnSalvarProtocolo = document.getElementById('salvarProtocoloLaudo');
+
+      // Ao clicar no botão, abrir popup
+      protocoloExame.addEventListener('click', () => {
+        popupProtocolo.style.display = 'flex';
+        inputProtocoloDigitos.focus();
+
+        // Busca o protocolo atual, pré-preenchendo os campos
+        const cabecalhoText = document.getElementById('cabecalhoDoLaudo').value;
+        const protocoloMatch = cabecalhoText.match(/[Pp](\d{5})-(\d{2})/);
+        if (protocoloMatch) {
+          inputProtocoloDigitos.value = protocoloMatch[1];
+          inputProtocoloAno.value = protocoloMatch[2];
+        } else {
+          inputProtocoloDigitos.value = "";
+          inputProtocoloAno.value = "26";
+        }
+      });
+
+      // Fechar popup ao clicar no X
+      fecharPopupProtocolo.addEventListener('click', () => {
+        popupProtocolo.style.display = 'none';
+      });
+
+      // Fechar popup por clique fora da caixa
+      popupProtocolo.addEventListener('mousedown', function(e) {
+        if (e.target === popupProtocolo) popupProtocolo.style.display = 'none';
+      });
+
+      // Validar entrada dos dígitos (apenas 5 digitos, zeros à esquerda)
+      inputProtocoloDigitos.addEventListener('input', function() {
+        let valor = this.value.replace(/\D/g, '').slice(0,5);
+        this.value = valor;
+      });
+      inputProtocoloAno.addEventListener('input', function() {
+        let valor = this.value.replace(/\D/g, '').slice(0,2);
+        this.value = valor;
+      });
+
+      // Salvar novo protocolo ao clicar no botão
+      btnSalvarProtocolo.addEventListener('click', () => {
+        // Pega valores, valida, preenche zeros
+        let digitos = inputProtocoloDigitos.value.replace(/\D/g,'').padStart(5, '0');
+        let ano = inputProtocoloAno.value.replace(/\D/g,'').padStart(2, '0');
+
+        if (digitos.length !== 5) {
+          inputProtocoloDigitos.focus();
+          return;
+        }
+        if (ano.length !== 2) {
+          inputProtocoloAno.focus();
+          return;
+        }
+
+        let protocoloCompleto = ('P' + digitos + "-" + ano).toUpperCase();
+
+        let chLaudo = document.getElementById('cabecalhoDoLaudo');
+        let novoTexto = chLaudo.value;
+        if (novoTexto.match(/[Pp]\d{5}-\d{2}/)) {
+          novoTexto = novoTexto.replace(/[Pp]\d{5}-\d{2}/, protocoloCompleto);
+        } else {
+          novoTexto += (novoTexto.trim().length ? "\n" : "") + protocoloCompleto;
+        }
+        chLaudo.value = novoTexto;
+
+        popupProtocolo.style.display = 'none';
+      });
+
+      // Permite Enter para aceitar
+      inputProtocoloDigitos.addEventListener('keydown', function(e) {
+        if (e.key === "Enter") {
+          inputProtocoloAno.focus();
+        }
+      });
+      inputProtocoloAno.addEventListener('keydown', function(e) {
+        if (e.key === "Enter") {
+          btnSalvarProtocolo.click();
+        }
+      });
+    </script>
     <div id="popupProtocoloLaudo" style="display:none; position: fixed; z-index: 9999; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.3); align-items:center; justify-content:center;">
       <div style="background:#fff; padding:24px 22px 22px 22px; border-radius:6px; min-width:240px; max-width:92vw; box-shadow:0 3px 16px rgba(0,0,0,.35); position:relative;">
         <span id="fecharPopupProtocoloLaudo" style="position:absolute; top:10px; right:15px; font-size:1.3em; color:#888; cursor:pointer;">&times;</span>
@@ -66,11 +182,9 @@
     </div>
     <script>
       // Elementos para o protocolo
-      const protocoloExame = document.getElementById('protocoloExame');
-      const popupProtocolo = document.getElementById('popupProtocoloLaudo');
-      const fecharPopupProtocolo = document.getElementById('fecharPopupProtocoloLaudo');
+
       const inputProtocolo = document.getElementById('inputProtocoloLaudo');
-      const btnSalvarProtocolo = document.getElementById('salvarProtocoloLaudo');
+
 
       // Ao clicar no botão, abrir popup
       protocoloExame.addEventListener('click', () => {
@@ -205,7 +319,102 @@
     });
     </script>
 
+    <!-- Inserção do popup/modal para editar o número de laudo no formato 000000/2026 -->
+    <div id="popupNumeroLaudo" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.3); align-items:center; justify-content:center;">
+      <div style="background:#fff; padding:24px 22px 22px 22px; border-radius:6px; min-width:270px; max-width:92vw; box-shadow:0 3px 16px rgba(0,0,0,.35); position:relative;">
+        <span id="fecharPopupNumeroLaudo" style="position:absolute; top:10px; right:15px; font-size:1.3em; color:#888; cursor:pointer;">&times;</span>
+        <div style="font-size:1em; margin-bottom:12px;">Digite o número do laudo:</div>
+        <div style="display:flex; align-items:center; margin-bottom:14px;">
+          <input 
+            id="inputNumeroLaudoDigitos" 
+            type="number" 
+            min="0" 
+            max="999999" 
+            placeholder="000000"
+            style="font-size:1em; padding:6px 7px; width:90px; margin-right:7px; text-align:right;" 
+            maxlength="6"
+          >
+          <span style="margin:0 6px 0 3px; font-size:1.2em; color:#333;">/</span>
+          <input 
+            id="inputNumeroLaudoAno" 
+            type="number" 
+            min="2020" 
+            max="2100" 
+            value="2026" 
+            style="font-size:1em; padding:6px 7px; width:56px; text-align:right;" 
+            maxlength="4"
+          >
+        </div>
+        <button id="salvarNumeroLaudo" style="padding:7px 22px; font-size:1em;">Salvar</button>
+      </div>
+    </div>
+    <script>
+      // Elementos do número de laudo
+      const numeroLaudoBtn = document.getElementById('numeroLaudo');
+      const popupNumeroLaudo = document.getElementById('popupNumeroLaudo');
+      const fecharPopupNumeroLaudo = document.getElementById('fecharPopupNumeroLaudo');
+      const inputNumeroLaudoDigitos = document.getElementById('inputNumeroLaudoDigitos');
+      const inputNumeroLaudoAno = document.getElementById('inputNumeroLaudoAno');
+      const btnSalvarNumeroLaudo = document.getElementById('salvarNumeroLaudo');
+
+      // Abre popup ao clicar no botão "Laudo"
+      numeroLaudoBtn.addEventListener('click', () => {
+        popupNumeroLaudo.style.display = 'flex';
+        inputNumeroLaudoDigitos.focus();
+
+        // Busca o laudo atual no cabeçalho e preenche os campos se houver um
+        const cabecalhoText = document.getElementById('cabecalhoDoLaudo').value;
+        const laudoMatch = cabecalhoText.match(/(\d{6})\/(\d{4})/);
+        if (laudoMatch) {
+          inputNumeroLaudoDigitos.value = laudoMatch[1];
+          inputNumeroLaudoAno.value = laudoMatch[2];
+        } else {
+          inputNumeroLaudoDigitos.value = "";
+          inputNumeroLaudoAno.value = "2026";
+        }
+      });
+
+      // Fecha popup ao clicar no X
+      fecharPopupNumeroLaudo.addEventListener('click', () => {
+        popupNumeroLaudo.style.display = 'none';
+      });
+
+      // Fecha popup ao clicar fora da caixa
+      popupNumeroLaudo.addEventListener('mousedown', function(e) {
+        if (e.target === popupNumeroLaudo) popupNumeroLaudo.style.display = 'none';
+      });
+
+      // Fecha popup ao pressionar Escape
+      document.addEventListener('keydown', function(e){
+        if (popupNumeroLaudo.style.display !== 'none' && e.key === 'Escape') {
+          popupNumeroLaudo.style.display = 'none';
+        }
+      });
+
+      // Ao clicar em Salvar, atualiza o campo do cabeçalho
+      btnSalvarNumeroLaudo.addEventListener('click', () => {
+        // Garante zeros à esquerda em seis dígitos
+        let numero = inputNumeroLaudoDigitos.value.padStart(6,"0").slice(-6);
+        let ano = inputNumeroLaudoAno.value;
+        if(numero && ano) {
+          // Atualiza o campo do cabeçalho (substitui ou insere o número do laudo)
+          let cabecalho = document.getElementById('cabecalhoDoLaudo');
+          let novoLaudo = `${numero}/${ano}`;
+          if(cabecalho){
+            // Substitui se já existir, senão insere na primeira linha
+            if(/(\d{6})\/(\d{4})/.test(cabecalho.value)) {
+              cabecalho.value = cabecalho.value.replace(/(\d{6})\/(\d{4})/, novoLaudo);
+            } else {
+              cabecalho.value = novoLaudo + "\n" + cabecalho.value;
+            }
+          }
+        }
+        popupNumeroLaudo.style.display = 'none';
+      });
+    </script>
+
     
+
     <h1>1. Objetivo</h1>
     <textarea id="objetivoDoLaudo" data-value="dasda sd" name="objetivoDoLaudo" rows="4"></textarea>
 
