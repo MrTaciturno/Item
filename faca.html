@@ -416,7 +416,329 @@
     
 
     <h1>1. Objetivo</h1>
-    <textarea id="objetivoDoLaudo" data-value="dasda sd" name="objetivoDoLaudo" rows="4"></textarea>
+    <textarea id="objetivoDoLaudo" name="objetivoDoLaudo" rows="4"></textarea>
+
+    <!-- Botão para editar Elaboração/Circunscrição -->
+    <button id="btnEditarElaboracaoCircunscricao" type="button" style="font-weight:bold; margin-bottom:8px; margin-right:8px;">Elaboração/Circunscrição</button>
+
+    <script>
+      // Quando editar Elaboração/Circunscrição, insere/atualiza elaboração e circunscrição no objetivoDoLaudo
+      document.getElementById('btnEditarElaboracaoCircunscricao').addEventListener('click', function () {
+        const siglaElab = inputSiglaElaboracao.value.trim();
+        const cidadeElab = inputCidadeElaboracao.value.trim();
+        const siglaCirc = inputSiglaCircunscricao.value.trim();
+        const cidadeCirc = inputCidadeCircunscricao.value.trim();
+        let textoElab = '';
+        let textoCirc = '';
+        if (siglaElab && cidadeElab) {
+          textoElab = `Elaboração: ${siglaElab} - ${cidadeElab}`;
+        }
+        if (siglaCirc && cidadeCirc) {
+          textoCirc = `Circunscrição: ${siglaCirc} - ${cidadeCirc}`;
+        }
+
+        let elaboracaoCircunscricao = '';
+        if (textoElab && textoCirc) {
+          elaboracaoCircunscricao = `${textoElab}\n${textoCirc}`;
+        } else if (textoElab) {
+          elaboracaoCircunscricao = textoElab;
+        } else if (textoCirc) {
+          elaboracaoCircunscricao = textoCirc;
+        }
+
+        if (elaboracaoCircunscricao) {
+          // Atualiza ou insere as informações no objetivo
+          let textarea = document.getElementById('objetivoDoLaudo');
+          let linhas = textarea.value.split('\n');
+          // Remove linhas existentes de elaboração/circunscrição
+          linhas = linhas.filter(l =>
+            !/^Elaboração:/.test(l.trim()) && !/^Circunscrição:/.test(l.trim())
+          );
+          // Insere elaboração/circunscrição no topo
+          textarea.value = elaboracaoCircunscricao + (linhas.length ? "\n" + linhas.join('\n') : '');
+        }
+        
+      });
+    </script>
+    <style>
+      /* Remove o input readonly do DOM */
+      #elaboracaoCircunscricao { display: none !important; }
+    </style>
+    <!-- Campo readonly que mostra o resultado no cabeçalho (ou onde desejar) -->
+    <input 
+      id="elaboracaoCircunscricao" 
+      name="elaboracaoCircunscricao" 
+      type="text"
+      style="width:280px; font-family:monospace; margin-left:12px; letter-spacing:1.2px; font-size:1em; font-weight:bold;"
+      placeholder="Elaboração e Circunscrição: ..."
+      readonly
+      value=""
+    /> 
+
+    <!-- Modal Popup para editar Delegacia Elaboração e Circunscrição -->
+    <div id="popupElaboracaoCircunscricao" style="display:none; position: fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.36); align-items: center; justify-content: center;">
+      <div style="background:#fff; padding:20px 18px 18px 18px; border-radius:8px; min-width:265px; max-width:95vw; box-shadow:0 3px 16px rgba(0,0,0,0.3); position:relative;">
+        <span id="fecharPopupElaboracaoCircunscricao" style="position: absolute; top: 10px; right: 15px; font-size: 1.3em; color: #888; cursor: pointer;">&times;</span>
+        <div style="font-size:1em; margin-bottom:10px;" id="tituloPopupDelegacia">Editar Elaboração e Circunscrição:</div>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
+          <div>
+            <span style="font-weight:bold;">Elaboração:</span>
+            <input id="inputSiglaElaboracao" type="text" maxlength="10" style="width:45px; text-transform:uppercase;" placeholder="DDM/1DP"/>
+            <input id="inputCidadeElaboracao" type="text" maxlength="24" style="width:100px;" placeholder="Cidade"/>
+          </div>
+          <div>
+            <span style="font-weight:bold;">Circunscrição:</span>
+            <input id="inputSiglaCircunscricao" type="text" maxlength="10" style="width:45px; text-transform:uppercase;" placeholder="DDM/1DP"/>
+            <input id="inputCidadeCircunscricao" type="text" maxlength="24" style="width:100px;" placeholder="Cidade"/>
+          </div>
+        </div>
+        <button id="btnSalvarDelegacia" type="button" style="margin-top:8px; width:100%;">Salvar</button>
+      </div>
+    </div>
+
+    <script>
+      // Elementos do DOM
+      const btnEditarElaboracaoCircunscricao = document.getElementById('btnEditarElaboracaoCircunscricao');
+      const btnEditarCircunscricao = document.getElementById('btnEditarCircunscricao');
+      const popupElaboracaoCircunscricao = document.getElementById('popupElaboracaoCircunscricao');
+      const fecharPopupElaboracaoCircunscricao = document.getElementById('fecharPopupElaboracaoCircunscricao');
+      const inputSiglaElaboracao = document.getElementById('inputSiglaElaboracao');
+      const inputCidadeElaboracao = document.getElementById('inputCidadeElaboracao');
+      const inputSiglaCircunscricao = document.getElementById('inputSiglaCircunscricao');
+      const inputCidadeCircunscricao = document.getElementById('inputCidadeCircunscricao');
+      const btnSalvarDelegacia = document.getElementById('btnSalvarDelegacia');
+      const campoElaboracaoCircunscricao = document.getElementById('elaboracaoCircunscricao');
+      const tituloPopupDelegacia = document.getElementById('tituloPopupDelegacia');
+
+      // Estado para saber qual botão foi clicado por último
+      let modoDelegacia = "elaboracao"; // "elaboracao" ou "circunscricao"
+
+      // Função para abrir popup (com foco no input correto)
+      function abrirDelegaciaPopup(modo) {
+        modoDelegacia = modo;
+        popupElaboracaoCircunscricao.style.display = 'flex';
+        // Foco no campo relevante
+        if(modo === "elaboracao") {
+          inputSiglaElaboracao.focus();
+          tituloPopupDelegacia.textContent="Editar delegacia de Elaboração e Circunscrição:";
+        } else {
+          inputSiglaCircunscricao.focus();
+          tituloPopupDelegacia.textContent="Editar delegacia de Elaboração e Circunscrição:";
+        }
+      }
+
+      btnEditarElaboracaoCircunscricao.addEventListener('click', () => {
+        abrirDelegaciaPopup('elaboracao');
+      });
+      
+
+      fecharPopupElaboracaoCircunscricao.addEventListener('click', () => {
+        popupElaboracaoCircunscricao.style.display = 'none';
+      });
+
+      // Fecha popup ao clicar fora da caixa
+      popupElaboracaoCircunscricao.addEventListener('mousedown', function(e) {
+        if (e.target === popupElaboracaoCircunscricao) popupElaboracaoCircunscricao.style.display = 'none';
+      });
+
+      // Fecha popup ao pressionar ESC
+      document.addEventListener('keydown', function(e) {
+        if (popupElaboracaoCircunscricao.style.display !== 'none' && e.key === 'Escape') {
+          popupElaboracaoCircunscricao.style.display = 'none';
+        }
+      });
+
+      // Salvar delegacia (Elaboração e Circunscrição)
+      btnSalvarDelegacia.addEventListener('click', () => {
+        const siglaElab = (inputSiglaElaboracao.value || "").trim().toUpperCase();
+        const cidadeElab = (inputCidadeElaboracao.value || "").trim();
+        const siglaCirc = (inputSiglaCircunscricao.value || "").trim().toUpperCase();
+        const cidadeCirc = (inputCidadeCircunscricao.value || "").trim();
+
+        let texto = "";
+        if(siglaElab && cidadeElab && siglaCirc && cidadeCirc) {
+          if (siglaElab === siglaCirc && cidadeElab.toLowerCase() === cidadeCirc.toLowerCase()) {
+            // Iguais
+            texto = `Elaboração e Circunscrição: ${siglaElab} ${cidadeElab}`;
+          } else {
+            texto = `Elaboração: ${siglaElab} ${cidadeElab} e Circunscrição: ${siglaCirc} ${cidadeCirc}`;
+          }
+        } else if(siglaElab && cidadeElab) {
+          texto = `Elaboração: ${siglaElab} ${cidadeElab}`;
+        } else if(siglaCirc && cidadeCirc) {
+          texto = `Circunscrição: ${siglaCirc} ${cidadeCirc}`;
+        }
+        campoElaboracaoCircunscricao.value = texto;
+        popupElaboracaoCircunscricao.style.display = 'none';
+      });
+
+      // Ao abrir o popup, preenche os campos com o que já está salvo (opcional)
+      function preencherCamposDelegacia() {
+        // Parse básico do campo atual
+        const val = campoElaboracaoCircunscricao.value || "";
+        let match;
+        // Casos possíveis:
+        // Elaboração e Circunscrição: DDM Americana
+        // Elaboração: DDM Americana e Circunscrição: 1DP Hortolândia
+        if((match = val.match(/^Elaboração e Circunscrição:\s*([A-Z0-9/]+)\s+(.+)$/))) {
+          inputSiglaElaboracao.value = match[1];
+          inputCidadeElaboracao.value = match[2];
+          inputSiglaCircunscricao.value = match[1];
+          inputCidadeCircunscricao.value = match[2];
+        } else if((match = val.match(/^Elaboração:\s*([A-Z0-9/]+)\s+([^\e]+)\s+e\s+Circunscrição:\s*([A-Z0-9/]+)\s+(.+)$/))) {
+          inputSiglaElaboracao.value = match[1];
+          inputCidadeElaboracao.value = match[2];
+          inputSiglaCircunscricao.value = match[3];
+          inputCidadeCircunscricao.value = match[4];
+        } else {
+          // Limpa 
+          inputSiglaElaboracao.value = "";
+          inputCidadeElaboracao.value = "";
+          inputSiglaCircunscricao.value = "";
+          inputCidadeCircunscricao.value = "";
+        }
+      }
+      // Sempre que for abrir popup, preenche campos
+      btnEditarElaboracaoCircunscricao.addEventListener('click', preencherCamposDelegacia);
+      
+    </script>
+    <button id="btnAbrirPopupBO" type="button" style="font-weight:bold; margin-bottom:8px;">BO</button>
+
+    <script>
+      // Botão "BO" para abrir o popup de BO
+      document.addEventListener('DOMContentLoaded', function() {
+        const btnAbrirPopupBO = document.getElementById('btnAbrirPopupBO');
+        if (btnAbrirPopupBO) {
+          // btnAbrirPopupBO.addEventListener('click', function() {
+          //   const btnEditarNumeroBO = document.getElementById('btnEditarNumeroBO');
+          //   if (btnEditarNumeroBO) btnEditarNumeroBO.click();
+          // });
+        }
+      });
+    </script>
+
+
+    <label for="numeroBO" style="display:none;font-weight:bold;">N° do BO:</label>
+    <input 
+      id="numeroBO" 
+      name="numeroBO" 
+      type="text"
+      style="display:none;width: 155px; font-family:monospace; letter-spacing:2px;"
+      placeholder="AA0000-1/2026"
+      readonly
+      value=""/> 
+    
+    
+
+    <!-- Modal Popup para editar número do BO -->
+    <div id="popupNumeroBO" style="display:none; position: fixed; z-index: 10000; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.38); align-items: center; justify-content: center;">
+      <div style="background:#fff; padding:22px 20px 20px 20px; border-radius:8px; min-width:280px; max-width:95vw; box-shadow:0 3px 16px rgba(0,0,0,0.32); position:relative;">
+        <span id="fecharPopupNumeroBO" style="position: absolute; top: 10px; right: 15px; font-size: 1.3em; color: #888; cursor: pointer;">&times;</span>
+        <div style="font-size:1em; margin-bottom:9px;">Editar número do BO:</div>
+        <div style="display:flex; gap:5px;">
+          <input id="inputBOUF" type="text" maxlength="2" style="width:32px; text-transform:uppercase;" placeholder="UF"/>
+          <input id="inputBONum1" type="text" maxlength="4" style="width:50px;" placeholder="0000"/>
+          <span>-</span>
+          <input id="inputBONum2" type="text" maxlength="1" style="width:20px;" placeholder="1"/>
+          <span>/</span>
+          <input id="inputBOAno" type="text" maxlength="4" style="width:48px;" placeholder="2026"/>
+        </div>
+        <button id="btnSalvarNumeroBO" type="button" style="margin-top:11px; width:100%;">Salvar</button>
+      </div>
+    </div>
+
+    <script>
+      // DOM elements
+      const numeroBO = document.getElementById('numeroBO');
+      const btnAbrirPopupBO = document.getElementById('btnAbrirPopupBO');
+      const popupNumeroBO = document.getElementById('popupNumeroBO');
+      const fecharPopupNumeroBO = document.getElementById('fecharPopupNumeroBO');
+      const inputBOUF = document.getElementById('inputBOUF');
+      const inputBONum1 = document.getElementById('inputBONum1');
+      const inputBONum2 = document.getElementById('inputBONum2');
+      const inputBOAno = document.getElementById('inputBOAno');
+      const btnSalvarNumeroBO = document.getElementById('btnSalvarNumeroBO');
+      const objetivoDoLaudoTextarea = document.getElementById('objetivoDoLaudo');
+
+      // Função para mostrar popup preenchendo dados atuais
+      btnAbrirPopupBO.addEventListener('click', () => {
+        let val = numeroBO.value || "";
+        // Regex para AA0000-1/2026
+        let match = val.match(/^([A-Za-z]{2})(\d{4})-(\d)\/(\d{4})$/);
+        if (match) {
+          inputBOUF.value = match[1] || "";
+          inputBONum1.value = match[2] || "";
+          inputBONum2.value = match[3] || "";
+          inputBOAno.value = match[4] || "";
+        } else {
+          inputBOUF.value = "";
+          inputBONum1.value = "";
+          inputBONum2.value = "";
+          inputBOAno.value = "2026";
+        }
+        popupNumeroBO.style.display = 'flex';
+        setTimeout(()=>inputBOUF.focus(), 100);
+      });
+
+      fecharPopupNumeroBO.addEventListener('click', ()=> {
+        popupNumeroBO.style.display = 'none';
+      });
+      // Fecha ao clicar fora
+      popupNumeroBO.addEventListener('mousedown', function(e){
+        if (e.target === popupNumeroBO) popupNumeroBO.style.display = 'none';
+      });
+      // Fecha ao Esc
+      document.addEventListener('keydown', function(e){
+        if (popupNumeroBO.style.display !== 'none' && e.key === 'Escape') {
+          popupNumeroBO.style.display = 'none';
+        }
+      });
+
+      // Avança com Enter entre campos
+      [inputBOUF, inputBONum1, inputBONum2, inputBOAno].forEach((el, ix, arr)=>{
+        el.addEventListener('keydown', function(e){
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (ix<arr.length-1) arr[ix+1].focus();
+            else btnSalvarNumeroBO.focus();
+          }
+        });
+      });
+
+      btnSalvarNumeroBO.addEventListener('click', ()=>{
+        let uf = inputBOUF.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,2);
+        let n1 = inputBONum1.value.replace(/\D/g,'').padStart(4,'0').slice(-4);
+        let n2 = inputBONum2.value.replace(/\D/g,'').slice(0,1);
+        let ano = inputBOAno.value.replace(/\D/g,'').slice(0,4);
+
+        if(uf.length===2 && n1.length===4 && n2.length===1 && ano.length===4) {
+          const novoBO = `${uf}${n1}-${n2}/${ano}`;
+          numeroBO.value = novoBO;
+          popupNumeroBO.style.display = 'none';
+
+          // Substitui trecho "BO N° AA0000-0/2026" por "BO N° <novoBO>" no textarea do objetivo, se houver tal trecho
+          if (objetivoDoLaudoTextarea) {
+            let textoAtual = objetivoDoLaudoTextarea.value;
+            // Regex para o formato strict "BO N° AA0000-0/2026", com tolerância a espaços 
+            let textoAtualAtualizado = textoAtual.replace(
+              /BO\s*N[º°]\s*[A-Za-z]{2}\d{4}-\d\/\d{4}/,
+              `BO N° ${novoBO}`
+            );
+            objetivoDoLaudoTextarea.value = textoAtualAtualizado;
+          }
+        } else {
+          // Preenchimento incorreto: autocompleta com AA0000-1/ANO_CORRENTE
+          const anoAtual = new Date().getFullYear();
+          inputBOUF.value = "AA";
+          inputBONum1.value = "0000";
+          inputBONum2.value = "1";
+          inputBOAno.value = anoAtual;
+        }
+      });
+    </script>
+
+
+
 
     <h1>2. Do(s) Objeto(s) e dos Exames</h1>
     <textarea id="objetosDoLaudo"  name="objetosDoLaudo" rows="5"></textarea>
