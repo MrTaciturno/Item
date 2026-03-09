@@ -418,192 +418,189 @@
     <h1>1. Objetivo</h1>
     <textarea id="objetivoDoLaudo" name="objetivoDoLaudo" rows="4"></textarea>
 
-    <!-- Botão para editar Elaboração/Circunscrição -->
-    <button id="btnEditarElaboracaoCircunscricao" type="button" style="font-weight:bold; margin-bottom:8px; margin-right:8px;">Elaboração/Circunscrição</button>
-
-    <script>
-      // Quando editar Elaboração/Circunscrição, insere/atualiza elaboração e circunscrição no objetivoDoLaudo
-      document.getElementById('btnEditarElaboracaoCircunscricao').addEventListener('click', function () {
-        const siglaElab = inputSiglaElaboracao.value.trim();
-        const cidadeElab = inputCidadeElaboracao.value.trim();
-        const siglaCirc = inputSiglaCircunscricao.value.trim();
-        const cidadeCirc = inputCidadeCircunscricao.value.trim();
-        let textoElab = '';
-        let textoCirc = '';
-        if (siglaElab && cidadeElab) {
-          textoElab = `Elaboração: ${siglaElab} - ${cidadeElab}`;
-        }
-        if (siglaCirc && cidadeCirc) {
-          textoCirc = `Circunscrição: ${siglaCirc} - ${cidadeCirc}`;
-        }
-
-        let elaboracaoCircunscricao = '';
-        if (textoElab && textoCirc) {
-          elaboracaoCircunscricao = `${textoElab}\n${textoCirc}`;
-        } else if (textoElab) {
-          elaboracaoCircunscricao = textoElab;
-        } else if (textoCirc) {
-          elaboracaoCircunscricao = textoCirc;
-        }
-
-        if (elaboracaoCircunscricao) {
-          // Atualiza ou insere as informações no objetivo
-          let textarea = document.getElementById('objetivoDoLaudo');
-          let linhas = textarea.value.split('\n');
-          // Remove linhas existentes de elaboração/circunscrição
-          linhas = linhas.filter(l =>
-            !/^Elaboração:/.test(l.trim()) && !/^Circunscrição:/.test(l.trim())
-          );
-          // Insere elaboração/circunscrição no topo
-          textarea.value = elaboracaoCircunscricao + (linhas.length ? "\n" + linhas.join('\n') : '');
-        }
-        
-      });
+      
     </script>
-    <style>
-      /* Remove o input readonly do DOM */
-      #elaboracaoCircunscricao { display: none !important; }
-    </style>
-    <!-- Campo readonly que mostra o resultado no cabeçalho (ou onde desejar) -->
-    <input 
-      id="elaboracaoCircunscricao" 
-      name="elaboracaoCircunscricao" 
-      type="text"
-      style="width:280px; font-family:monospace; margin-left:12px; letter-spacing:1.2px; font-size:1em; font-weight:bold;"
-      placeholder="Elaboração e Circunscrição: ..."
-      readonly
-      value=""
-    /> 
+    
+    <div style="margin-bottom: 6px;">
+      <div style="display: inline-flex; width: 100%; padding: 2px;">
+    <button id="btnElaboracao" style="padding: 10px 30px; font-size: 1.2em; height: 50px; margin: 5px 0; width: 100%;">
+          Elaboração
+      </button>
+    <button id="btnCircunscricao" style="padding: 10px 30px; font-size: 1.2em; height: 50px; margin: 5px 0; width: 100%;">
+        Circunscrição 
+    </button>
+    <button id="btnAbrirPopupBO" style="padding: 10px 30px; font-size: 1.2em; height: 50px; margin: 5px 0; width: 100%;">
+      BO 
+  </button>
+  
+  </div>
 
-    <!-- Modal Popup para editar Delegacia Elaboração e Circunscrição -->
-    <div id="popupElaboracaoCircunscricao" style="display:none; position: fixed; z-index:10000; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.36); align-items: center; justify-content: center;">
-      <div style="background:#fff; padding:20px 18px 18px 18px; border-radius:8px; min-width:265px; max-width:95vw; box-shadow:0 3px 16px rgba(0,0,0,0.3); position:relative;">
-        <span id="fecharPopupElaboracaoCircunscricao" style="position: absolute; top: 10px; right: 15px; font-size: 1.3em; color: #888; cursor: pointer;">&times;</span>
-        <div style="font-size:1em; margin-bottom:10px;" id="tituloPopupDelegacia">Editar Elaboração e Circunscrição:</div>
-        <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
+    <!-- INSERT_YOUR_CODE -->
+
+    <!-- Modal Popup para seleção de Circunscrição -->
+    <div id="popupCircunscricao" style="display:none; position: fixed; z-index: 10001; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.38); align-items: center; justify-content: center;">
+      <div style="background:#fff; padding:22px 28px 20px 28px; border-radius:10px; min-width:310px; max-width:96vw; box-shadow:0 3px 16px rgba(0,0,0,0.32); position:relative;">
+        <span id="fecharPopupCircunscricao" style="position: absolute; top: 10px; right: 15px; font-size: 1.3em; color: #888; cursor: pointer;">&times;</span>
+        <div style="font-size:1.1em; margin-bottom:12px; font-weight:bold;">Selecionar Circunscrição</div>
+        <div style="display:flex; gap:26px; justify-content:center;">
+          <!-- Primeira Coluna -->
           <div>
-            <span style="font-weight:bold;">Elaboração:</span>
-            <input id="inputSiglaElaboracao" type="text" maxlength="10" style="width:45px; text-transform:uppercase;" placeholder="DDM/1DP"/>
-            <input id="inputCidadeElaboracao" type="text" maxlength="24" style="width:100px;" placeholder="Cidade"/>
+            <div><input type="radio" name="circunscricao_dp" id="circ_1dp" value="1DP"><label for="circ_1dp" style="margin-left:5px;">1DP</label></div>
+            <div><input type="radio" name="circunscricao_dp" id="circ_2dp" value="2DP"><label for="circ_2dp" style="margin-left:5px;">2DP</label></div>
+            <div><input type="radio" name="circunscricao_dp" id="circ_3dp" value="3DP"><label for="circ_3dp" style="margin-left:5px;">3DP</label></div>
+            <div><input type="radio" name="circunscricao_dp" id="circ_4dp" value="4DP"><label for="circ_4dp" style="margin-left:5px;">4DP</label></div>
+            <div><input type="radio" name="circunscricao_dp" id="circ_5dp" value="5DP"><label for="circ_5dp" style="margin-left:5px;">5DP</label></div>
+            <div><input type="radio" name="circunscricao_dp" id="circ_ddm" value="DDM"><label for="circ_ddm" style="margin-left:5px;">DDM</label></div>
+            <div><input type="radio" name="circunscricao_dp" id="circ_dig" value="DIG"><label for="circ_dig" style="margin-left:5px;">DIG</label></div>
+            <div><input type="radio" name="circunscricao_dp" id="circ_dise" value="DISE"><label for="circ_dise" style="margin-left:5px;">DISE</label></div>
+            <div><input type="radio" name="circunscricao_dp" id="circ_dpp" value="DPP"><label for="circ_dpp" style="margin-left:5px;">DPP</label></div>
+            <div><input type="radio" name="circunscricao_dp" id="circ_dpm" value="DPM"><label for="circ_dpm" style="margin-left:5px;">DPM</label></div>
           </div>
+          <!-- Segunda Coluna -->
           <div>
-            <span style="font-weight:bold;">Circunscrição:</span>
-            <input id="inputSiglaCircunscricao" type="text" maxlength="10" style="width:45px; text-transform:uppercase;" placeholder="DDM/1DP"/>
-            <input id="inputCidadeCircunscricao" type="text" maxlength="24" style="width:100px;" placeholder="Cidade"/>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_americana" value="AMERICANA"><label for="circ_americana" style="margin-left:5px;">AMERICANA</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_artur" value="ARTUR NOGUEIRA"><label for="circ_artur" style="margin-left:5px;">ARTUR NOGUEIRA</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_cosmopolis" value="COSMÓPOLIS"><label for="circ_cosmopolis" style="margin-left:5px;">COSMÓPOLIS</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_nova" value="NOVA ODESSA"><label for="circ_nova" style="margin-left:5px;">NOVA ODESSA</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_hortolandia" value="HORTOLÂNDIA"><label for="circ_hortolandia" style="margin-left:5px;">HORTOLÂNDIA</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_sbo" value="SANTA BÁRBARA D'OESTE"><label for="circ_sbo" style="margin-left:5px;">SANTA BÁRBARA D'OESTE</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_sumare" value="SUMARÉ"><label for="circ_sumare" style="margin-left:5px;">SUMARÉ</label></div>
           </div>
         </div>
-        <button id="btnSalvarDelegacia" type="button" style="margin-top:8px; width:100%;">Salvar</button>
+        <button id="btnSalvarCircunscricao" type="button" style="margin-top:16px; width:100%;">Salvar</button>
       </div>
     </div>
 
     <script>
-      // Elementos do DOM
-      const btnEditarElaboracaoCircunscricao = document.getElementById('btnEditarElaboracaoCircunscricao');
-      const btnEditarCircunscricao = document.getElementById('btnEditarCircunscricao');
-      const popupElaboracaoCircunscricao = document.getElementById('popupElaboracaoCircunscricao');
-      const fecharPopupElaboracaoCircunscricao = document.getElementById('fecharPopupElaboracaoCircunscricao');
-      const inputSiglaElaboracao = document.getElementById('inputSiglaElaboracao');
-      const inputCidadeElaboracao = document.getElementById('inputCidadeElaboracao');
-      const inputSiglaCircunscricao = document.getElementById('inputSiglaCircunscricao');
-      const inputCidadeCircunscricao = document.getElementById('inputCidadeCircunscricao');
-      const btnSalvarDelegacia = document.getElementById('btnSalvarDelegacia');
-      const campoElaboracaoCircunscricao = document.getElementById('elaboracaoCircunscricao');
-      const tituloPopupDelegacia = document.getElementById('tituloPopupDelegacia');
+      // Elementos DOM para popup Circunscrição
+      const btnCircunscricao = document.getElementById('btnCircunscricao');
+      const popupCircunscricao = document.getElementById('popupCircunscricao');
+      const fecharPopupCircunscricao = document.getElementById('fecharPopupCircunscricao');
+      const btnSalvarCircunscricao = document.getElementById('btnSalvarCircunscricao');
 
-      // Estado para saber qual botão foi clicado por último
-      let modoDelegacia = "elaboracao"; // "elaboracao" ou "circunscricao"
-
-      // Função para abrir popup (com foco no input correto)
-      function abrirDelegaciaPopup(modo) {
-        modoDelegacia = modo;
-        popupElaboracaoCircunscricao.style.display = 'flex';
-        // Foco no campo relevante
-        if(modo === "elaboracao") {
-          inputSiglaElaboracao.focus();
-          tituloPopupDelegacia.textContent="Editar delegacia de Elaboração e Circunscrição:";
-        } else {
-          inputSiglaCircunscricao.focus();
-          tituloPopupDelegacia.textContent="Editar delegacia de Elaboração e Circunscrição:";
-        }
+      if(btnCircunscricao && popupCircunscricao) {
+        btnCircunscricao.addEventListener('click', function() {
+          popupCircunscricao.style.display = 'flex';
+          popupCircunscricao.style.alignItems = 'center';
+          popupCircunscricao.style.justifyContent = 'center';
+        });
       }
-
-      btnEditarElaboracaoCircunscricao.addEventListener('click', () => {
-        abrirDelegaciaPopup('elaboracao');
-      });
-      
-
-      fecharPopupElaboracaoCircunscricao.addEventListener('click', () => {
-        popupElaboracaoCircunscricao.style.display = 'none';
-      });
-
-      // Fecha popup ao clicar fora da caixa
-      popupElaboracaoCircunscricao.addEventListener('mousedown', function(e) {
-        if (e.target === popupElaboracaoCircunscricao) popupElaboracaoCircunscricao.style.display = 'none';
-      });
-
-      // Fecha popup ao pressionar ESC
-      document.addEventListener('keydown', function(e) {
-        if (popupElaboracaoCircunscricao.style.display !== 'none' && e.key === 'Escape') {
-          popupElaboracaoCircunscricao.style.display = 'none';
-        }
-      });
-
-      // Salvar delegacia (Elaboração e Circunscrição)
-      btnSalvarDelegacia.addEventListener('click', () => {
-        const siglaElab = (inputSiglaElaboracao.value || "").trim().toUpperCase();
-        const cidadeElab = (inputCidadeElaboracao.value || "").trim();
-        const siglaCirc = (inputSiglaCircunscricao.value || "").trim().toUpperCase();
-        const cidadeCirc = (inputCidadeCircunscricao.value || "").trim();
-
-        let texto = "";
-        if(siglaElab && cidadeElab && siglaCirc && cidadeCirc) {
-          if (siglaElab === siglaCirc && cidadeElab.toLowerCase() === cidadeCirc.toLowerCase()) {
-            // Iguais
-            texto = `Elaboração e Circunscrição: ${siglaElab} ${cidadeElab}`;
-          } else {
-            texto = `Elaboração: ${siglaElab} ${cidadeElab} e Circunscrição: ${siglaCirc} ${cidadeCirc}`;
-          }
-        } else if(siglaElab && cidadeElab) {
-          texto = `Elaboração: ${siglaElab} ${cidadeElab}`;
-        } else if(siglaCirc && cidadeCirc) {
-          texto = `Circunscrição: ${siglaCirc} ${cidadeCirc}`;
-        }
-        campoElaboracaoCircunscricao.value = texto;
-        popupElaboracaoCircunscricao.style.display = 'none';
-      });
-
-      // Ao abrir o popup, preenche os campos com o que já está salvo (opcional)
-      function preencherCamposDelegacia() {
-        // Parse básico do campo atual
-        const val = campoElaboracaoCircunscricao.value || "";
-        let match;
-        // Casos possíveis:
-        // Elaboração e Circunscrição: DDM Americana
-        // Elaboração: DDM Americana e Circunscrição: 1DP Hortolândia
-        if((match = val.match(/^Elaboração e Circunscrição:\s*([A-Z0-9/]+)\s+(.+)$/))) {
-          inputSiglaElaboracao.value = match[1];
-          inputCidadeElaboracao.value = match[2];
-          inputSiglaCircunscricao.value = match[1];
-          inputCidadeCircunscricao.value = match[2];
-        } else if((match = val.match(/^Elaboração:\s*([A-Z0-9/]+)\s+([^\e]+)\s+e\s+Circunscrição:\s*([A-Z0-9/]+)\s+(.+)$/))) {
-          inputSiglaElaboracao.value = match[1];
-          inputCidadeElaboracao.value = match[2];
-          inputSiglaCircunscricao.value = match[3];
-          inputCidadeCircunscricao.value = match[4];
-        } else {
-          // Limpa 
-          inputSiglaElaboracao.value = "";
-          inputCidadeElaboracao.value = "";
-          inputSiglaCircunscricao.value = "";
-          inputCidadeCircunscricao.value = "";
-        }
+      if(fecharPopupCircunscricao && popupCircunscricao) {
+        fecharPopupCircunscricao.addEventListener('click', function() {
+          popupCircunscricao.style.display = 'none';
+        });
       }
-      // Sempre que for abrir popup, preenche campos
-      btnEditarElaboracaoCircunscricao.addEventListener('click', preencherCamposDelegacia);
-      
+      // Fecha o popup ao apertar ESC
+      document.addEventListener('keydown', function(e){
+        if (popupCircunscricao.style.display !== 'none' && e.key === 'Escape') {
+          popupCircunscricao.style.display = 'none';
+        }
+      });
+      // (Opcional) Ação do botão Salvar - pode ser adaptada conforme desejado
+      if(btnSalvarCircunscricao && popupCircunscricao){
+        btnSalvarCircunscricao.addEventListener('click', function(){
+          popupCircunscricao.style.display = 'none';
+        });
+      }
     </script>
-    <button id="btnAbrirPopupBO" type="button" style="font-weight:bold; margin-bottom:8px;">BO</button>
 
+    <!-- INSERT_YOUR_CODE -->
+
+    <!-- Modal Popup para seleção de Elaboração -->
+    <div id="popupElaboracao" style="display:none; position: fixed; z-index: 10000; left:0; top:0; width:100vw; height:100vh; background: rgba(0,0,0,0.38); align-items: center; justify-content: center;">
+      <div style="background:#fff; padding:22px 28px 20px 28px; border-radius:10px; min-width:310px; max-width:96vw; box-shadow:0 3px 16px rgba(0,0,0,0.32); position:relative;">
+        <span id="fecharPopupElaboracao" style="position: absolute; top: 10px; right: 15px; font-size: 1.3em; color: #888; cursor: pointer;">&times;</span>
+        <div style="font-size:1.1em; margin-bottom:12px; font-weight:bold;">Selecionar Elaboração</div>
+        <div style="display:flex; gap:26px; justify-content:center;">
+          <!-- Primeira Coluna -->
+          <div>
+            <div><input type="radio" name="dp" id="dp1" value="1DP"><label for="dp1" style="margin-left:5px;">1DP</label></div>
+            <div><input type="radio" name="dp" id="dp2" value="2DP"><label for="dp2" style="margin-left:5px;">2DP</label></div>
+            <div><input type="radio" name="dp" id="dp3" value="3DP"><label for="dp3" style="margin-left:5px;">3DP</label></div>
+            <div><input type="radio" name="dp" id="dp4" value="4DP"><label for="dp4" style="margin-left:5px;">4DP</label></div>
+            <div><input type="radio" name="dp" id="dp5" value="5DP"><label for="dp5" style="margin-left:5px;">5DP</label></div>
+            <div><input type="radio" name="dp" id="ddm" value="DDM"><label for="ddm" style="margin-left:5px;">DDM</label></div>
+            <div><input type="radio" name="dp" id="dig" value="DIG"><label for="dig" style="margin-left:5px;">DIG</label></div>
+            <div><input type="radio" name="dp" id="dise" value="DISE"><label for="dise" style="margin-left:5px;">DISE</label></div>
+            <div><input type="radio" name="dp" id="dpp" value="DPP"><label for="dpp" style="margin-left:5px;">DPP</label></div>
+            <div><input type="radio" name="dp" id="dpm" value="DPM"><label for="dpm" style="margin-left:5px;">DPM</label></div>
+          </div>
+          <!-- Segunda Coluna -->
+          <div>
+            <div><input type="radio" name="cidade" id="americana" value="AMERICANA"><label for="americana" style="margin-left:5px;">AMERICANA</label></div>
+            <div><input type="radio" name="cidade" id="artur" value="ARTUR NOGUEIRA"><label for="artur" style="margin-left:5px;">ARTUR NOGUEIRA</label></div>
+            <div><input type="radio" name="cidade" id="cosmopolis" value="COSMÓPOLIS"><label for="cosmopolis" style="margin-left:5px;">COSMÓPOLIS</label></div>
+            <div><input type="radio" name="cidade" id="nova" value="NOVA ODESSA"><label for="nova" style="margin-left:5px;">NOVA ODESSA</label></div>
+            <div><input type="radio" name="cidade" id="hortolandia" value="HORTOLÂNDIA"><label for="hortolandia" style="margin-left:5px;">HORTOLÂNDIA</label></div>
+            <div><input type="radio" name="cidade" id="sbo" value="SANTA BÁRBARA D'OESTE"><label for="sbo" style="margin-left:5px;">SANTA BÁRBARA D'OESTE</label></div>
+            <div><input type="radio" name="cidade" id="sumare" value="SUMARÉ"><label for="sumare" style="margin-left:5px;">SUMARÉ</label></div>
+          </div>
+        </div>
+        <button id="btnSalvarElaboracao" type="button" style="margin-top:16px; width:100%;">Salvar</button>
+      </div>
+    </div>
+
+    <script>
+      // Elementos DOM para popup Elaboração
+      const btnElaboracao = document.getElementById('btnElaboracao');
+      const popupElaboracao = document.getElementById('popupElaboracao');
+      const fecharPopupElaboracao = document.getElementById('fecharPopupElaboracao');
+      const btnSalvarElaboracao = document.getElementById('btnSalvarElaboracao');
+      
+      // Abrir popup ao clicar no botão
+      if (btnElaboracao && popupElaboracao) {
+        btnElaboracao.addEventListener('click', function() {
+          popupElaboracao.style.display = 'flex';
+          popupElaboracao.style.alignItems = 'center';
+          popupElaboracao.style.justifyContent = 'center';
+        });
+      }
+      // Fechar popup ao clicar no X
+      if (fecharPopupElaboracao && popupElaboracao) {
+        fecharPopupElaboracao.addEventListener('click', function() {
+          popupElaboracao.style.display = 'none';
+        });
+      }
+      // Fechar popup ao pressionar ESC
+      document.addEventListener('keydown', function(e){
+        if (popupElaboracao && popupElaboracao.style.display !== 'none' && e.key === 'Escape') {
+          popupElaboracao.style.display = 'none';
+        }
+      });
+      // Botão Salvar (funcionalidade de exemplo)
+      if (btnSalvarElaboracao && popupElaboracao) {
+        btnSalvarElaboracao.addEventListener('click', function() {
+          // Você pode capturar os valores selecionados aqui, por exemplo:
+          // const dpSelecionado = document.querySelector('input[name="dp"]:checked');
+          // const cidadeSelecionada = document.querySelector('input[name="cidade"]:checked');
+          popupElaboracao.style.display = 'none';
+        });
+      }
+    // Adicione os dados obtidos no textarea de id "objetivo"
+    if (btnSalvarElaboracao && popupElaboracao) {
+      btnSalvarElaboracao.addEventListener('click', function() {
+        // Obtendo selecionados
+        const dpSelecionado = document.querySelector('input[name="dp"]:checked');
+        const cidadeSelecionada = document.querySelector('input[name="cidade"]:checked');
+        // Montando texto para adicionar
+        let texto = '';
+        if (dpSelecionado) {
+          texto += `${dpSelecionado.value}`;
+        }
+        if (cidadeSelecionada) {
+          texto += ` ${cidadeSelecionada.value}`;
+        }
+        // Adicionando no textarea "objetivo"
+        const textareaObjetivo = document.getElementById('objetivoDoLaudo');
+        if (textareaObjetivo) {
+          textareaObjetivo.value += texto;
+        }
+        popupElaboracao.style.display = 'none';
+      });
+    }
+    </script>
+
+  
     <script>
       // Botão "BO" para abrir o popup de BO
       document.addEventListener('DOMContentLoaded', function() {
@@ -636,7 +633,7 @@
         <span id="fecharPopupNumeroBO" style="position: absolute; top: 10px; right: 15px; font-size: 1.3em; color: #888; cursor: pointer;">&times;</span>
         <div style="font-size:1em; margin-bottom:9px;">Editar número do BO:</div>
         <div style="display:flex; gap:5px;">
-          <input id="inputBOUF" type="text" maxlength="2" style="width:32px; text-transform:uppercase;" placeholder="UF"/>
+          <input id="inputBOUF" type="text" maxlength="2" style="width:32px; text-transform:uppercase;" placeholder="AA"/>
           <input id="inputBONum1" type="text" maxlength="4" style="width:50px;" placeholder="0000"/>
           <span>-</span>
           <input id="inputBONum2" type="text" maxlength="1" style="width:20px;" placeholder="1"/>
