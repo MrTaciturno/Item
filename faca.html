@@ -458,13 +458,13 @@
           </div>
           <!-- Segunda Coluna -->
           <div>
-            <div><input type="radio" name="circunscricao_cidade" id="circ_americana" value="AMERICANA"><label for="circ_americana" style="margin-left:5px;">AMERICANA</label></div>
-            <div><input type="radio" name="circunscricao_cidade" id="circ_artur" value="ARTUR NOGUEIRA"><label for="circ_artur" style="margin-left:5px;">ARTUR NOGUEIRA</label></div>
-            <div><input type="radio" name="circunscricao_cidade" id="circ_cosmopolis" value="COSMÓPOLIS"><label for="circ_cosmopolis" style="margin-left:5px;">COSMÓPOLIS</label></div>
-            <div><input type="radio" name="circunscricao_cidade" id="circ_nova" value="NOVA ODESSA"><label for="circ_nova" style="margin-left:5px;">NOVA ODESSA</label></div>
-            <div><input type="radio" name="circunscricao_cidade" id="circ_hortolandia" value="HORTOLÂNDIA"><label for="circ_hortolandia" style="margin-left:5px;">HORTOLÂNDIA</label></div>
-            <div><input type="radio" name="circunscricao_cidade" id="circ_sbo" value="SANTA BÁRBARA D'OESTE"><label for="circ_sbo" style="margin-left:5px;">SANTA BÁRBARA D'OESTE</label></div>
-            <div><input type="radio" name="circunscricao_cidade" id="circ_sumare" value="SUMARÉ"><label for="circ_sumare" style="margin-left:5px;">SUMARÉ</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_americana" value="Americana"><label for="circ_americana" style="margin-left:5px;">Americana</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_artur" value="Artur Nogueira"><label for="circ_artur" style="margin-left:5px;">Artur Nogueira</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_cosmopolis" value="Cosmópolis"><label for="circ_cosmopolis" style="margin-left:5px;">Cosmópolis</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_nova" value="Nova Odessa"><label for="circ_nova" style="margin-left:5px;">Nova Odessa</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_hortolandia" value="Hortolândia"><label for="circ_hortolandia" style="margin-left:5px;">Hortolândia</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_sbo" value="Santa Bárbara D'Oeste"><label for="circ_sbo" style="margin-left:5px;">Santa Bárbara D'Oeste</label></div>
+            <div><input type="radio" name="circunscricao_cidade" id="circ_sumare" value="Sumaré"><label for="circ_sumare" style="margin-left:5px;">Sumaré</label></div>
           </div>
         </div>
         <button id="btnSalvarCircunscricao" type="button" style="margin-top:16px; width:100%;">Salvar</button>
@@ -472,6 +472,10 @@
     </div>
 
     <script>
+      
+     
+
+
       // Elementos DOM para popup Circunscrição
       const btnCircunscricao = document.getElementById('btnCircunscricao');
       const popupCircunscricao = document.getElementById('popupCircunscricao');
@@ -502,6 +506,29 @@
           popupCircunscricao.style.display = 'none';
         });
       }
+      if (btnSalvarCircunscricao && popupCircunscricao) {
+      btnSalvarCircunscricao.addEventListener('click', function() {
+        // Obtendo selecionados
+        const circunscricaoSelecionada = document.querySelector('input[name="circunscricao_dp"]:checked');
+        const cidadeSelecionada = document.querySelector('input[name="circunscricao_cidade"]:checked');
+        // Montando texto para adicionar
+        let texto = '';
+        if (circunscricaoSelecionada) {
+          texto += `${circunscricaoSelecionada.value}`;
+        }
+        if (cidadeSelecionada) {
+          texto += `, ${cidadeSelecionada.value}`;
+        }
+        // Adicionando no textarea "objetivo"
+        const textareaObjetivo = document.getElementById('objetivoDoLaudo');
+        if (textareaObjetivo) {
+          const { elaboracao, circunscricao } = extrairElaboracaoCircunscricao();
+          preencherParentesesObjetivoDoLaudo(elaboracao, texto);
+        }
+        popupCircunscricao.style.display = 'none';
+      });
+    }
+
     </script>
 
     <!-- INSERT_YOUR_CODE -->
@@ -527,13 +554,13 @@
           </div>
           <!-- Segunda Coluna -->
           <div>
-            <div><input type="radio" name="cidade" id="americana" value="AMERICANA"><label for="americana" style="margin-left:5px;">AMERICANA</label></div>
-            <div><input type="radio" name="cidade" id="artur" value="ARTUR NOGUEIRA"><label for="artur" style="margin-left:5px;">ARTUR NOGUEIRA</label></div>
-            <div><input type="radio" name="cidade" id="cosmopolis" value="COSMÓPOLIS"><label for="cosmopolis" style="margin-left:5px;">COSMÓPOLIS</label></div>
-            <div><input type="radio" name="cidade" id="nova" value="NOVA ODESSA"><label for="nova" style="margin-left:5px;">NOVA ODESSA</label></div>
-            <div><input type="radio" name="cidade" id="hortolandia" value="HORTOLÂNDIA"><label for="hortolandia" style="margin-left:5px;">HORTOLÂNDIA</label></div>
-            <div><input type="radio" name="cidade" id="sbo" value="SANTA BÁRBARA D'OESTE"><label for="sbo" style="margin-left:5px;">SANTA BÁRBARA D'OESTE</label></div>
-            <div><input type="radio" name="cidade" id="sumare" value="SUMARÉ"><label for="sumare" style="margin-left:5px;">SUMARÉ</label></div>
+            <div><input type="radio" name="cidade" id="americana" value="Americana"><label for="americana" style="margin-left:5px;">Americana</label></div>
+            <div><input type="radio" name="cidade" id="artur" value="Artur Nogueira"><label for="artur" style="margin-left:5px;">Artur Nogueira</label></div>
+            <div><input type="radio" name="cidade" id="cosmopolis" value="Cosmópolis"><label for="cosmopolis" style="margin-left:5px;">Cosmópolis</label></div>
+            <div><input type="radio" name="cidade" id="nova" value="Nova Odessa"><label for="nova" style="margin-left:5px;">Nova Odessa</label></div>
+            <div><input type="radio" name="cidade" id="hortolandia" value="Hortolândia"><label for="hortolandia" style="margin-left:5px;">Hortolândia</label></div>
+            <div><input type="radio" name="cidade" id="sbo" value="Santa Bárbara D'Oeste"><label for="sbo" style="margin-left:5px;">Santa Bárbara D'Oeste</label></div>
+            <div><input type="radio" name="cidade" id="sumare" value="Sumaré"><label for="sumare" style="margin-left:5px;">Sumaré</label></div>
           </div>
         </div>
         <button id="btnSalvarElaboracao" type="button" style="margin-top:16px; width:100%;">Salvar</button>
@@ -593,13 +620,15 @@
         // Adicionando no textarea "objetivo"
         const textareaObjetivo = document.getElementById('objetivoDoLaudo');
         if (textareaObjetivo) {
-          textareaObjetivo.value += texto;
+          const { elaboracao, circunscricao } = extrairElaboracaoCircunscricao();
+          preencherParentesesObjetivoDoLaudo(texto, circunscricao);
         }
         popupElaboracao.style.display = 'none';
       });
     }
     </script>
-
+  
+  
   
     <script>
       // Botão "BO" para abrir o popup de BO

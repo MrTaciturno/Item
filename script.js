@@ -244,7 +244,7 @@ window.onload = function() {
     const cabecalhoDoLaudo = document.getElementById('cabecalhoDoLaudo');
     cabecalhoDoLaudo.value = `Em 15 de janeiro de 2026, no Núcleo de Perícias Criminalísticas de Americana, do Instituto de Criminalística, da Superintendência da Polícia Técnico-Científica, da Secretaria de Negócios de Segurança Pública do Estado de São Paulo, em conformidade com o disposto no Decreto-Lei n.º 3.689/41 combinado com os Decretos n.º 42.815/08 e n.º 42.847/08, o Diretor deste Instituto de Criminalística, designou o Perito Criminal signatário para proceder a este exame pericial, em atendimento à requisição protocolada sob n.º P00000-26, laudo 000000/2026.`;
     const objetivoDoLaudo = document.getElementById('objetivoDoLaudo');
-    objetivoDoLaudo.value = `O objetivo deste exame pericial é atender a requisição relacionada ao BO N° AA0000-0/2026 (Elaboração e Circunscrição: DP Cidade), tendo como natureza de exame: “Descrição de objeto”. O(s) objeto(s) descrito(s) estava(m) acondicionado(s) em invólucro plástico de lacre n° 0000000.`;
+    objetivoDoLaudo.value = `O objetivo deste exame pericial é atender a requisição relacionada ao BO N° AA0000-0/2026 (Elaboração e Circunscrição: 1DP Americana), tendo como natureza de exame: “Descrição de objeto”. O(s) objeto(s) descrito(s) estava(m) acondicionado(s) em invólucro plástico de lacre n° 0000000.`;
 
     const objetosDoLaudo = document.getElementById('objetosDoLaudo');
     objetosDoLaudo.value = `01 (uma) faca de cozinha; usada; apresentando oxidação na lâmina e sujidades; marca/modelo “Tramontina”; com lâmina pontiaguda e de gume afiado; de cabo em madeira, dotado de 3 rebites metálicos; de comprimento total de 27,5cm e de lâmina de comprimento de 15,3cm com largura máxima de 3,5cm; de massa de 80g.`;
@@ -264,6 +264,55 @@ Equipe:`;
 
 }
 
+ 
+ function extrairElaboracaoCircunscricao() {
+    const objetivo = document.getElementById('objetivoDoLaudo');
+    if (!objetivo) return { elaboracao: '', circunscricao: '' };
+    const texto = objetivo.value;
+
+    // Procura o texto entre o primeiro '(' e o próximo ')'
+    const matchParenteses = texto.match(/\(([^)]*)\)/);
+    if (!matchParenteses) return { elaboracao: '', circunscricao: '' };
+    const infoEntreParenteses = matchParenteses[1];
+
+    // Caso Elaboração e Circunscrição sejam iguais
+    if (/Elaboração e Circunscrição/gi.test(infoEntreParenteses)) {
+      // Extrai a parte após os ':' ou last espaço, se houver.
+      const dpMatch = infoEntreParenteses.match(/Elaboração e Circunscrição:\s*([^,)]+)/i);
+      const valor = dpMatch ? dpMatch[1].trim() : '';
+      return { elaboracao: valor, circunscricao: valor };
+    } else {
+      // Procura Elaboração e Circunscrição separadas
+      let elaboracao = '', circunscricao = '';
+      const elaMatch = infoEntreParenteses.match(/Elaboração:\s*([^,)]*)/i);
+      if (elaMatch) elaboracao = elaMatch[1].trim();
+
+      const circMatch = infoEntreParenteses.match(/Circunscrição:\s*([^,)]*)/i);
+      if (circMatch) circunscricao = circMatch[1].trim();
+
+      return { elaboracao, circunscricao };
+    }
+  }
+
+function preencherParentesesObjetivoDoLaudo(elaboracao, circunscricao) {
+    const textarea = document.getElementById('objetivoDoLaudo');
+    if (!textarea) return;
+    let novoTexto = textarea.value;
+    if (!novoTexto) return;
+
+    // Montar o trecho a ser inserido nos parênteses
+    let parentesesTxt = '';
+    if (elaboracao === circunscricao) {
+        parentesesTxt = `(Elaboração e Circunscrição: ${elaboracao})`;
+    } else {
+        parentesesTxt = `(Elaboração: ${elaboracao} e Circunscrição: ${circunscricao})`;
+    }
+
+    // Substituir o conteúdo entre o primeiro parêntese "(" e o próximo ")"
+    novoTexto = novoTexto.replace(/\([^)]*\)/, parentesesTxt);
+    textarea.value = novoTexto;
+}
+  
 
 function importarPref() {
     const input = document.createElement('input');
