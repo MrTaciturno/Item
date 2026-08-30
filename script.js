@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Advanced OCR Detection, Multi-Lacre, Auto-Object Generation & DOCX 1.5 Spacing
+// Main Application Script with AlignmentType.JUSTIFIED, Arial 12 Captions, Blank Field Omission & DOCX 1.5 Spacing
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -311,6 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (campo.tipo === 'select') {
         inputEl = document.createElement('select');
 
+        // Adicionar opção de Omitir em todos os dropdowns
         const optOmitir = document.createElement('option');
         optOmitir.value = "[Omitir]";
         optOmitir.innerText = "-- Omitir (não mencionar) --";
@@ -381,8 +382,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let desc = template;
 
     Object.keys(campoValues).forEach(key => {
-      const val = campoValues[key] || '';
+      const val = (campoValues[key] || '').trim();
 
+      // Se for omitir ou vazio, remover cláusula do template
       if (!val || val === '[Omitir]') {
         desc = desc.replace(new RegExp(`;\\s*\\{${key}\\}`, 'g'), '');
         desc = desc.replace(new RegExp(`\\{${key}\\}\\s*;`, 'g'), '');
@@ -392,17 +394,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // Limpeza profunda de placeholders residuais, pontuações duplas e espaços
     desc = desc.replace(/\{[a-zA-Z0-9_]+\}/g, '')
                .replace(/;\s*;/g, ';')
                .replace(/;\s*\./g, '.')
+               .replace(/,\s*\./g, '.')
                .replace(/\s+/g, ' ')
-               .replace(/\s+\./g, '.');
+               .replace(/\s+\./g, '.')
+               .replace(/\s+;/g, ';');
 
-    if (campoValues.sim_cards && campoValues.sim_cards !== '[Omitir]') {
-      desc += ` Anexo ao aparelho havia ${campoValues.sim_cards}.`;
+    if (campoValues.sim_cards && campoValues.sim_cards.trim() && campoValues.sim_cards.trim() !== '[Omitir]') {
+      desc += ` Anexo ao aparelho havia ${campoValues.sim_cards.trim()}.`;
     }
-    if (campoValues.cartao_memoria && campoValues.cartao_memoria !== '[Omitir]') {
-      desc += ` Continha cartão de memória ${campoValues.cartao_memoria}.`;
+    if (campoValues.cartao_memoria && campoValues.cartao_memoria.trim() && campoValues.cartao_memoria.trim() !== '[Omitir]') {
+      desc += ` Continha cartão de memória ${campoValues.cartao_memoria.trim()}.`;
     }
 
     return desc;
@@ -828,7 +833,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (laudoState.objetos.length === 0) {
       pvObjetosContainer.innerHTML = '<p class="document-p text-justify">[Descrição do(s) objeto(s) e exames efetuados]</p>';
     } else {
-      // Se houver apenas 1 lacre, listar os objetos diretamente sem subtítulo letrado (a. b. c.)
       if (laudoState.lacres.length <= 1) {
         laudoState.objetos.forEach(obj => {
           const p = document.createElement('p');
@@ -837,7 +841,6 @@ document.addEventListener('DOMContentLoaded', () => {
           pvObjetosContainer.appendChild(p);
         });
       } else {
-        // Se houver mais de 1 lacre, criar subtítulos ordenados (a. b. c.)
         laudoState.lacres.forEach(lacre => {
           const objetosDoLacre = laudoState.objetos.filter(o => o.lacreId === lacre.id);
           if (objetosDoLacre.length > 0) {
@@ -877,7 +880,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (ARIAL 12, ESPAÇAMENTO 1.5, JUSTIFICADO)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (ARIAL 12, ESPAÇAMENTO 1.5, ALINHAMENTO JUSTIFICADO)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -887,7 +890,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const docx = window.docx;
       if (!docx) throw new Error('Biblioteca docx.js não carregada');
 
+      // AlignmentType.JUSTIFIED ("both") para alinhamento justificado no Word
       const { Document, Packer, Paragraph, TextRun, AlignmentType, ImageRun, Header, Footer, PageNumber } = docx;
+      const alignJustified = AlignmentType.JUSTIFIED || AlignmentType.BOTH || "both";
 
       let cabecalhoBuffer = null;
       try {
@@ -902,9 +907,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // 1. PREÂMBULO (Arial 12pt, Espaçamento 1.5, Justificado, Recuo 1ª Linha)
       docParagraphs.push(
         new Paragraph({
-          alignment: AlignmentType.JUSTIFY,
+          alignment: alignJustified,
           indent: { firstLine: 709 }, // 1.25 cm
-          spacing: { line: 360, after: 200 },
+          spacing: { line: 360, after: 200 }, // 1.5 espaçamento
           children: [
             new TextRun({ text: `Em ${laudoState.preambulo.dataDesignacao}, no Núcleo de Perícias Criminalísticas de Americana, do Instituto de Criminalística, da Superintendência da Polícia Técnico-Científica, da Secretaria de Negócios de Segurança Pública do Estado de São Paulo, em conformidade com o disposto no Decreto-Lei n.º 3.689/41 combinado com os Decretos n.º 42.815/08 e n.º 42.847/08, o Diretor deste Instituto de Criminalística, designou o Perito Criminal signatário para proceder a este exame pericial, em atendimento à requisição protocolada sob n.º `, font: "Arial", size: 24 }),
             new TextRun({ text: laudoState.preambulo.protocolo, bold: true, font: "Arial", size: 24 }),
@@ -923,7 +928,7 @@ document.addEventListener('DOMContentLoaded', () => {
           children: [new TextRun({ text: "1. OBJETIVO", bold: true, font: "Arial", size: 24 })]
         }),
         new Paragraph({
-          alignment: AlignmentType.JUSTIFY,
+          alignment: alignJustified,
           indent: { firstLine: 709 },
           spacing: { line: 360, after: 150 },
           children: [
@@ -938,7 +943,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       docParagraphs.push(
         new Paragraph({
-          alignment: AlignmentType.JUSTIFY,
+          alignment: alignJustified,
           indent: { firstLine: 709 },
           spacing: { line: 360, after: 250 },
           children: [
@@ -959,19 +964,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (laudoState.objetos.length === 0) {
         docParagraphs.push(
           new Paragraph({
-            alignment: AlignmentType.JUSTIFY,
+            alignment: alignJustified,
             indent: { firstLine: 709 },
             spacing: { line: 360, after: 200 },
             children: [new TextRun({ text: "[Nenhum objeto cadastrado]", italic: true, font: "Arial", size: 24 })]
           })
         );
       } else {
-        // Se houver apenas 1 lacre, não gerar subtítulos ordenados (a. b. c.)
         if (laudoState.lacres.length <= 1) {
           laudoState.objetos.forEach(obj => {
             docParagraphs.push(
               new Paragraph({
-                alignment: AlignmentType.JUSTIFY,
+                alignment: alignJustified,
                 indent: { firstLine: 709 },
                 spacing: { line: 360, after: 200 },
                 children: [new TextRun({ text: obj.descricaoFormatada, font: "Arial", size: 24 })]
@@ -979,13 +983,12 @@ document.addEventListener('DOMContentLoaded', () => {
             );
           });
         } else {
-          // Se houver mais de 1 lacre, gerar subtítulos ordenados (a. b. c.)
           laudoState.lacres.forEach(lacre => {
             const objetosDoLacre = laudoState.objetos.filter(o => o.lacreId === lacre.id);
             if (objetosDoLacre.length > 0) {
               docParagraphs.push(
                 new Paragraph({
-                  alignment: AlignmentType.JUSTIFY,
+                  alignment: alignJustified,
                   indent: { firstLine: 709 },
                   spacing: { line: 360, before: 150, after: 100 },
                   children: [
@@ -997,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', () => {
               objetosDoLacre.forEach(obj => {
                 docParagraphs.push(
                   new Paragraph({
-                    alignment: AlignmentType.JUSTIFY,
+                    alignment: alignJustified,
                     indent: { firstLine: 709 },
                     spacing: { line: 360, after: 200 },
                     children: [new TextRun({ text: obj.descricaoFormatada, font: "Arial", size: 24 })]
@@ -1050,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', () => {
             new Paragraph({
               alignment: AlignmentType.CENTER,
               spacing: { before: 50, after: 200 },
-              children: [new TextRun({ text: foto.legendaText, italic: true, font: "Arial", size: 20 })]
+              children: [new TextRun({ text: foto.legendaText, italic: true, font: "Arial", size: 24 })] // Legendas em Arial 12pt!
             })
           );
         } catch (imgErr) {
@@ -1066,7 +1069,7 @@ document.addEventListener('DOMContentLoaded', () => {
           children: [new TextRun({ text: "4. DAS CONSIDERAÇÕES FINAIS", bold: true, font: "Arial", size: 24 })]
         }),
         new Paragraph({
-          alignment: AlignmentType.JUSTIFY,
+          alignment: alignJustified,
           indent: { firstLine: 709 },
           spacing: { line: 360, after: 250 },
           children: [
