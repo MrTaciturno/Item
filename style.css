@@ -583,7 +583,7 @@ textarea#ocr-pasted-text:focus {
   text-align: center;
 }
 
-/* BLALCO DE ASSINATURA E CIDADE/DATA ALINHAMENTO À DIREITA */
+/* ASSINATURA E CIDADE/DATA ALINHAMENTO À DIREITA */
 .signature-block-right {
   margin-top: 3rem;
   page-break-inside: avoid;
@@ -600,22 +600,32 @@ textarea#ocr-pasted-text:focus {
   margin-bottom: 0.5rem;
 }
 
+/* RODAPÉ ATUALIZADO (LETRA DIMINUTA COM NOTA LEGAL E SEM NÚMERO DE LAUDO) */
 .preview-footer {
   margin-top: 2rem;
   font-family: 'Arial', sans-serif;
-  font-size: 9pt;
+  font-size: 7.5pt;
   color: #475569;
 }
 
 .preview-footer hr {
   border: none;
   border-top: 1px solid #cbd5e1;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .footer-content {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.footer-legal-text {
+  font-size: 7pt;
+  color: #475569;
+  flex: 1;
+  line-height: 1.2;
 }
 
 /* UTILS & RESPONSIVE */
