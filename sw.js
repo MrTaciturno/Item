@@ -1,5 +1,5 @@
 // Service Worker para PWA Offline Aitem
-const CACHE_NAME = 'aitem-v1';
+const CACHE_NAME = 'aitem-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -16,7 +16,7 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Caching app assets');
+      console.log('[Service Worker] Caching updated app assets');
       return cache.addAll(ASSETS_TO_CACHE).catch(err => {
         console.warn('[Service Worker] Non-critical cache error:', err);
       });
@@ -57,7 +57,6 @@ self.addEventListener('fetch', (event) => {
         });
         return response;
       }).catch(() => {
-        // Retorno em caso de modo 100% offline se não estiver no cache
         return caches.match('./index.html');
       });
     })
