@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aitem - Formulário e Gerador de Laudos Periciais</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Arial:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <!-- docx.js library -->
   <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
@@ -42,6 +43,7 @@
         <button type="button" class="tab-btn" data-tab="tab-objetos">📱 2. Objetos & Exames</button>
         <button type="button" class="tab-btn" data-tab="tab-fotos">📸 3. Fotos</button>
         <button type="button" class="tab-btn" data-tab="tab-fechamento">✍️ Considerações Finais</button>
+        <button type="button" class="tab-btn" data-tab="tab-config">⚙️ Preferências & Compêndio</button>
       </nav>
 
       <div class="tab-content-container">
@@ -123,9 +125,24 @@
                 <label for="input-natureza-exame">Natureza / Objetivo do Exame</label>
                 <input type="text" id="input-natureza-exame" placeholder="ex: Constatar funcionalidade">
               </div>
-              <div class="form-group full-width">
-                <label for="input-lacres-entrada">Lacre(s) de Entrada do(s) Objeto(s)</label>
-                <input type="text" id="input-lacres-entrada" placeholder="ex: invólucro plástico de lacre nº 030310">
+            </div>
+
+            <!-- GERENCIADOR DE MÚLTIPLOS LACRES -->
+            <div class="mt-3">
+              <label><strong>🔒 Lacres de Entrada dos Objetos:</strong></label>
+              <p class="help-text">Cadastre um ou mais lacres. Cada lacre receberá uma letra identificadora (a., b., c.) para agrupar os objetos no laudo.</p>
+              
+              <div id="lacres-container" class="lacres-container">
+                <!-- Lacres dinâmicos gerados via JS -->
+              </div>
+              
+              <div class="form-grid mt-2">
+                <div class="form-group">
+                  <input type="text" id="input-novo-lacre-num" placeholder="Número do lacre (ex: 030310)">
+                </div>
+                <div class="form-group">
+                  <button type="button" id="btn-add-lacre" class="btn btn-secondary btn-sm">➕ Adicionar Lacre</button>
+                </div>
               </div>
             </div>
           </fieldset>
@@ -145,6 +162,14 @@
 
           <div id="objeto-form-container" class="card mt-3 hidden">
             <h3 id="objeto-form-title">Preencher Detalhes do Objeto</h3>
+            
+            <div class="form-group full-width mb-3">
+              <label for="select-objeto-lacre"><strong>Vincular ao Lacre de Entrada:</strong></label>
+              <select id="select-objeto-lacre">
+                <!-- Opções de lacres populadas via JS -->
+              </select>
+            </div>
+
             <form id="form-dinamico-objeto" class="form-grid">
               <!-- Campos gerados dinamicamente via JS -->
             </form>
@@ -165,7 +190,7 @@
         <!-- ABA 4: LEVANTAMENTO FOTOGRÁFICO -->
         <div id="tab-fotos" class="tab-pane">
           <h2>📸 Capítulo 3. Levantamento Fotográfico</h2>
-          <p class="help-text">Adicione as fotos periciais. A primeira foto receberá por padrão a legenda "Objeto(s) aportado(s) neste setor.". No documento `.docx`, as fotos terão altura mínima de 8cm sem deformação.</p>
+          <p class="help-text">Adicione as fotos periciais. Você pode girar as fotos (rotacionar na horizontal/vertical). No arquivo .docx, as fotos terão altura mínima de 8cm sem deformação.</p>
 
           <div class="card">
             <input type="file" id="input-fotos-upload" accept="image/jpeg,image/png" multiple style="display:none">
@@ -205,6 +230,45 @@
             </div>
           </fieldset>
         </div>
+
+        <!-- ABA 6: CONFIGURAÇÕES E COMPÊNDIO PERSONALIZADO -->
+        <div id="tab-config" class="tab-pane">
+          <h2>⚙️ Preferências do Usuário & Compêndio Customizado</h2>
+          
+          <div class="card">
+            <h3>👤 Dados Padrão do Perito</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="pref-nome-perito">Nome Padrão do Perito</label>
+                <input type="text" id="pref-nome-perito" placeholder="ex: Perito Criminal João Silva">
+              </div>
+              <div class="form-group">
+                <label for="pref-del-elaboracao">Delegacia de Elaboração Frequente</label>
+                <input type="text" id="pref-del-elaboracao" placeholder="ex: Del. Pol. Monte Mor">
+              </div>
+              <div class="form-group">
+                <label for="pref-cidade">Cidade / Núcleo de Perícias</label>
+                <input type="text" id="pref-cidade" placeholder="ex: Americana">
+              </div>
+            </div>
+            <button type="button" id="btn-save-preferences" class="btn btn-primary mt-3">💾 Salvar Preferências no Navegador</button>
+          </div>
+
+          <div class="card mt-3">
+            <h3>📚 Gerenciar Compêndio de Descrições (JSON)</h3>
+            <p class="help-text">Você pode importar um arquivo JSON contendo seu compêndio de modelos personalizado ou restaurar o compêndio padrão.</p>
+            
+            <div class="form-grid">
+              <div class="form-group">
+                <input type="file" id="input-custom-compendio-file" accept="application/json" style="display:none">
+                <button type="button" id="btn-import-compendio" class="btn btn-secondary">📥 Importar Compêndio JSON</button>
+              </div>
+              <div class="form-group">
+                <button type="button" id="btn-reset-compendio" class="btn btn-danger">🔄 Restaurar Compêndio Padrão</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -213,7 +277,7 @@
       <div class="preview-toolbar">
         <span>📄 Pré-Visualização do Laudo (Editável na tela)</span>
         <div class="toolbar-actions">
-          <small>As alterações digitadas na pré-visualização são salvas automaticamente!</small>
+          <small>Formatação: Arial 12, Justificado com Tabulação na 1ª linha</small>
         </div>
       </div>
 
@@ -232,37 +296,38 @@
             </p>
 
             <!-- 1. OBJETIVO -->
-            <h3 class="document-h3">OBJETIVO</h3>
+            <h3 class="document-h3">1. OBJETIVO</h3>
             <p id="pv-objetivo" class="document-p text-justify">
               O objetivo deste exame pericial é atender a requisição relacionada ao BO Nº <span class="pv-field" id="pv-bo-num">[Número BO]</span> (Elaboração: <span class="pv-field" id="pv-del-elaboracao">[Del. Elaboração]</span> e Circunscrição: <span class="pv-field" id="pv-del-circunscricao">[Del. Circunscrição]</span>), tendo como natureza de exame: "<span class="pv-field" id="pv-natureza-exame">[Natureza do Exame]</span>".
             </p>
-            <p id="pv-lacres" class="document-p text-justify">
+            <p id="pv-lacres-resumo" class="document-p text-justify">
               O(s) objeto(s) descrito(s) estava(m) acondicionado(s) em <span class="pv-field" id="pv-lacres-entrada">[invólucro plástico de lacre nº ...]</span>.
             </p>
 
             <!-- 2. DO OBJETO E DOS EXAMES -->
-            <h3 class="document-h3">DO(S) OBJETO(S) E DOS EXAMES</h3>
+            <h3 class="document-h3">2. DO(S) OBJETO(S) E DOS EXAMES</h3>
             <div id="pv-objetos-container">
               <p class="document-p text-justify">[Descrição do(s) objeto(s) e exames efetuados]</p>
             </div>
 
             <!-- 3. LEVANTAMENTO FOTOGRÁFICO -->
-            <h3 class="document-h3">LEVANTAMENTO FOTOGRÁFICO</h3>
+            <h3 class="document-h3">3. LEVANTAMENTO FOTOGRÁFICO</h3>
             <div id="pv-fotos-container" class="preview-fotos-layout">
               <!-- Fotos renderizadas dinamicamente -->
             </div>
 
-            <!-- DAS CONSIDERAÇÕES FINAIS -->
-            <h3 class="document-h3">DAS CONSIDERAÇÕES FINAIS</h3>
+            <!-- 4. DAS CONSIDERAÇÕES FINAIS -->
+            <h3 class="document-h3">4. DAS CONSIDERAÇÕES FINAIS</h3>
             <p id="pv-consideracoes-finais" class="document-p text-justify">
               O(s) objetos(s) descrito(s) segue(m) em <span class="pv-field" id="pv-lacre-saida">invólucro(s) plástico(s) (de lacre informado na capa deste laudo)</span> anexo a este laudo pericial que possui <span id="pv-total-paginas">X</span> (<span id="pv-total-paginas-extenso">X</span>) páginas, incluindo capa, ficando assinado digitalmente nos termos da MP nº2200-2/2001 de 24/08/2001.
             </p>
 
-            <div class="signature-block">
-              <p id="pv-data-elaboracao" class="text-center">[Local e Data por extenso]</p>
+            <!-- ASSINATURA E CIDADE/DATA ALINHADAS À DIREITA -->
+            <div class="signature-block-right">
+              <p id="pv-data-elaboracao" class="text-right">[Local e Data por extenso]</p>
               <br><br>
-              <div class="signature-line"></div>
-              <p id="pv-nome-perito" class="text-center"><strong>[Nome do Perito Criminal]</strong><br>Perito Criminal</p>
+              <div class="signature-line-right"></div>
+              <p id="pv-nome-perito" class="text-right"><strong>[Nome do Perito Criminal]</strong><br>Perito Criminal</p>
             </div>
           </div>
 
