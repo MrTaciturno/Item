@@ -1,0 +1,75 @@
+{
+  "categorias": [
+    {
+      "id": "smartphone",
+      "nome": "Aparelho Celular (Smartphone)",
+      "icone": "📱",
+      "modelo_descricao": "01 (um) aparelho móvel de comunicação (smartphone); de marca de fabricação {marca}, modelo {modelo}; {estado_op}; {estado_bloqueio}; IMEI {imei1}{imei2}{sn}.",
+      "campos": [
+        { "id": "quantidade", "label": "Quantidade", "tipo": "number", "default": 1 },
+        { "id": "marca", "label": "Marca de Fabricação", "tipo": "text", "placeholder": "ex: Samsung, Motorola, Xiaomi, Apple" },
+        { "id": "modelo", "label": "Modelo", "tipo": "text", "placeholder": "ex: Galaxy A05, XT1920, REDMI" },
+        { "id": "cor", "label": "Cor", "tipo": "text", "placeholder": "ex: preta, azul, cinza" },
+        { "id": "estado_op", "label": "Funcionamento", "tipo": "select", "opcoes": ["operante", "apresentou funcionamento", "não funcional", "não apresentou funcionamento", "apresentando danos fisicos"] },
+        { "id": "estado_bloqueio", "label": "Bloqueio", "tipo": "select", "opcoes": ["bloqueado", "desbloqueado", "bloqueio não testado", "não se aplica"] },
+        { "id": "imei1", "label": "IMEI 1", "tipo": "text", "placeholder": "Ex: 354974380796514" },
+        { "id": "imei2", "label": "IMEI 2", "tipo": "text", "placeholder": "Ex: 354974380796522 (opcional)" },
+        { "id": "sn", "label": "Número de Série (S/N)", "tipo": "text", "placeholder": "Ex: R9QX10086VB (opcional)" },
+        { "id": "sim_cards", "label": "SIM Cards / CHIPs", "tipo": "text", "placeholder": "Ex: 01 da operadora CLARO ICCID 8955053..." },
+        { "id": "cartao_memoria", "label": "Cartão de Memória", "tipo": "text", "placeholder": "Ex: MicroSD SanDisk 32GB" }
+      ]
+    },
+    {
+      "id": "mini_celular",
+      "nome": "Mini Celular",
+      "icone": "📱",
+      "modelo_descricao": "01 (um) aparelho móvel de telecomunicação (mini celular); {estado_uso}; de marca de fabricação aparente {marca}, modelo {modelo}; de cor {cor}; {bateria}; ostentava etiqueta interna: IMEI1: {imei1} e S/N: {sn}; {estado_op}.",
+      "campos": [
+        { "id": "quantidade", "label": "Quantidade", "tipo": "number", "default": 1 },
+        { "id": "marca", "label": "Marca Aparente", "tipo": "text", "placeholder": "ex: DECWIN, L8STAR" },
+        { "id": "modelo", "label": "Modelo", "tipo": "text", "placeholder": "ex: BM30, BM10" },
+        { "id": "cor", "label": "Cor", "tipo": "text", "placeholder": "ex: preta, dourada" },
+        { "id": "estado_uso", "label": "Estado de Uso", "tipo": "select", "opcoes": ["usado", "novo", "com desgaste de uso"] },
+        { "id": "bateria", "label": "Bateria", "tipo": "select", "opcoes": ["contendo bateria", "sem bateria", "bateria danificada"] },
+        { "id": "imei1", "label": "IMEI 1", "tipo": "text" },
+        { "id": "sn", "label": "Número de Série (S/N)", "tipo": "text" },
+        { "id": "estado_op", "label": "Funcionamento", "tipo": "select", "opcoes": ["não apresentou funcionamento", "apresentou funcionamento"] }
+      ]
+    },
+    {
+      "id": "faca",
+      "nome": "Arma Branca / Faca",
+      "icone": "🔪",
+      "modelo_descricao": "01 (uma) faca de corte; com lâmina metálica medindo aproximadamente {comprimento_lamina} cm e cabo em {material_cabo}; {estado_conservacao}.",
+      "campos": [
+        { "id": "comprimento_lamina", "label": "Comprimento da Lâmina (cm)", "tipo": "number" },
+        { "id": "material_cabo", "label": "Material do Cabo", "tipo": "text", "placeholder": "ex: plástico preto, madeira" },
+        { "id": "estado_conservacao", "label": "Estado de Conservação", "tipo": "select", "opcoes": ["apresentando marcas de uso", "em bom estado de conservação", "com sujidades aparentes"] }
+      ]
+    },
+    {
+      "id": "vestuario",
+      "nome": "Vestuário / Camiseta",
+      "icone": "👕",
+      "modelo_descricao": "01 (uma) peça de vestuário ({tipo_peca}); de cor {cor}; tamanho {tamanho}; ostentando a marca/inscrição '{marca}'; {estado_conservacao}.",
+      "campos": [
+        { "id": "tipo_peca", "label": "Tipo de Peça", "tipo": "text", "placeholder": "ex: camiseta de manga curta" },
+        { "id": "cor", "label": "Cor", "tipo": "text" },
+        { "id": "tamanho", "label": "Tamanho", "tipo": "text", "placeholder": "ex: M, G, GG" },
+        { "id": "marca", "label": "Marca ou Inscrição", "tipo": "text" },
+        { "id": "estado_conservacao", "label": "Estado", "tipo": "select", "opcoes": ["usada e conservada", "apresentando sujidades", "danificada"] }
+      ]
+    },
+    {
+      "id": "ferramenta",
+      "nome": "Ferramenta Diversa",
+      "icone": "🛠️",
+      "modelo_descricao": "01 (uma) ferramenta ({tipo_ferramenta}); de marca {marca}; {estado_conservacao}.",
+      "campos": [
+        { "id": "tipo_ferramenta", "label": "Tipo de Ferramenta", "tipo": "text", "placeholder": "ex: chave de fenda, alicate" },
+        { "id": "marca", "label": "Marca", "tipo": "text" },
+        { "id": "estado_conservacao", "label": "Estado", "tipo": "select", "opcoes": ["em estado regular de uso", "com marcas de desgaste", "com oxidação"] }
+      ]
+    }
+  ]
+}

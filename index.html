@@ -1,30 +1,284 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>Laudos de Vistoria</title>
-    <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
-
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aitem - Formulário e Gerador de Laudos Periciais</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- docx.js library -->
+  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+  <!-- Tesseract.js for OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <!-- PDF.js for PDF reading -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
-    <img id="cabeca" src="cabecalho.png" alt="Cabeçalho" style="width: 100%; ">
-
-
-    <h1>Laudo de Peças</h1>
-    <p>Escolha o tipo de item</p>
-
-    <button id="abrirFaca" onclick="window.open('faca.html', '_blank')" style="padding: 10px 40px; font-size: 1.2em; margin: 5px 0; width: 100%;">Abrir Página Faca</button>
-        
-
-    <div id="bedeibagens" style="width: 100%">
-
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="logo-icon">⚖️</div>
+      <div>
+        <h1>Aitem</h1>
+        <p class="subtitle">Sistema de Elaboração e Automação de Laudos Periciais</p>
+      </div>
     </div>
-    
-<script src="script.js"></script>
+    <div class="header-actions">
+      <button type="button" id="btn-export-docx" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Baixar Laudo (.docx)
+      </button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- PAINEL ESQUERDO: CONTROLES E FORMULÁRIOS -->
+    <section class="controls-panel">
+      <!-- NAVEGAÇÃO DE ABAS -->
+      <nav class="tabs-nav">
+        <button type="button" class="tab-btn active" data-tab="tab-ocr">⚡ OCR / Importar</button>
+        <button type="button" class="tab-btn" data-tab="tab-preambulo">📝 Preâmbulo & Objetivo</button>
+        <button type="button" class="tab-btn" data-tab="tab-objetos">📱 2. Objetos & Exames</button>
+        <button type="button" class="tab-btn" data-tab="tab-fotos">📸 3. Fotos</button>
+        <button type="button" class="tab-btn" data-tab="tab-fechamento">✍️ Considerações Finais</button>
+      </nav>
+
+      <div class="tab-content-container">
+        <!-- ABA 1: OCR E ENTRADA RÁPIDA -->
+        <div id="tab-ocr" class="tab-pane active">
+          <h2>⚡ Entrada Automática de Dados (OCR / Colar Texto)</h2>
+          <p class="help-text">Envie uma foto/PDF da requisição ou cole o texto extraído (ex: Google Lens) para auto-preencher os campos do laudo.</p>
+
+          <div class="ocr-grid">
+            <div class="card">
+              <h3>📄 Carregar Imagem (.jpg, .png) ou PDF da Requisição</h3>
+              <div class="file-dropzone" id="ocr-dropzone">
+                <input type="file" id="ocr-file-input" accept="image/jpeg,image/png,application/pdf">
+                <div class="dropzone-content">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+                  <p>Clique ou arraste a requisição aqui</p>
+                  <small>JPG, PNG ou PDF</small>
+                </div>
+              </div>
+              <div id="ocr-status" class="ocr-status-box hidden">
+                <div class="spinner"></div>
+                <span id="ocr-status-text">Processando OCR...</span>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>📋 Colar Texto Extraído da Requisição</h3>
+              <textarea id="ocr-pasted-text" rows="6" placeholder="Cole aqui o texto copiado da requisição (BO, Delegacia, Lacres, etc)..."></textarea>
+              <button type="button" id="btn-parse-text" class="btn btn-secondary mt-2">
+                🔍 Extrair Informações do Texto
+              </button>
+            </div>
+          </div>
+
+          <div id="ocr-results-summary" class="alert-box success hidden">
+            <strong>✅ Dados Detectados com Sucesso!</strong>
+            <p id="ocr-detected-fields-list"></p>
+          </div>
+        </div>
+
+        <!-- ABA 2: PREÂMBULO E OBJETIVO -->
+        <div id="tab-preambulo" class="tab-pane">
+          <h2>📝 Preâmbulo & Capítulo 1. Objetivo</h2>
+          
+          <fieldset class="form-section">
+            <legend>Preâmbulo</legend>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="input-data-designacao">Data da Designação</label>
+                <input type="text" id="input-data-designacao" placeholder="ex: 29 de agosto de 2026">
+              </div>
+              <div class="form-group">
+                <label for="input-protocolo">Número do Protocolo</label>
+                <input type="text" id="input-protocolo" placeholder="ex: P01412/26">
+              </div>
+              <div class="form-group">
+                <label for="input-laudo-num">Número do Laudo</label>
+                <input type="text" id="input-laudo-num" placeholder="ex: 162836/2026">
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>1. Objetivo</legend>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="input-bo-num">Número do BO</label>
+                <input type="text" id="input-bo-num" placeholder="ex: EM7833-1/2026">
+              </div>
+              <div class="form-group">
+                <label for="input-del-elaboracao">Delegacia de Elaboração</label>
+                <input type="text" id="input-del-elaboracao" placeholder="ex: Del. Pol. Monte Mor">
+              </div>
+              <div class="form-group">
+                <label for="input-del-circunscricao">Delegacia de Circunscrição</label>
+                <input type="text" id="input-del-circunscricao" placeholder="ex: 1DP Hortolândia">
+              </div>
+              <div class="form-group full-width">
+                <label for="input-natureza-exame">Natureza / Objetivo do Exame</label>
+                <input type="text" id="input-natureza-exame" placeholder="ex: Constatar funcionalidade">
+              </div>
+              <div class="form-group full-width">
+                <label for="input-lacres-entrada">Lacre(s) de Entrada do(s) Objeto(s)</label>
+                <input type="text" id="input-lacres-entrada" placeholder="ex: invólucro plástico de lacre nº 030310">
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        <!-- ABA 3: DO OBJETO E DOS EXAMES -->
+        <div id="tab-objetos" class="tab-pane">
+          <h2>📱 Capítulo 2. Do Objeto e dos Exames</h2>
+          <p class="help-text">Selecione uma categoria no compêndio para preencher a descrição padronizada do item periciado.</p>
+
+          <div class="compendio-selector card">
+            <label><strong>Selecionar Modelo do Compêndio:</strong></label>
+            <div id="compendio-categories" class="categories-grid">
+              <!-- Categorias carregadas via JS -->
+            </div>
+          </div>
+
+          <div id="objeto-form-container" class="card mt-3 hidden">
+            <h3 id="objeto-form-title">Preencher Detalhes do Objeto</h3>
+            <form id="form-dinamico-objeto" class="form-grid">
+              <!-- Campos gerados dinamicamente via JS -->
+            </form>
+            <div class="form-actions mt-3">
+              <button type="button" id="btn-salvar-objeto" class="btn btn-primary">➕ Adicionar / Atualizar Objeto no Laudo</button>
+              <button type="button" id="btn-cancelar-objeto" class="btn btn-secondary">Cancelar</button>
+            </div>
+          </div>
+
+          <div class="card mt-3">
+            <h3>Lista de Objetos Cadastrados no Laudo</h3>
+            <div id="objetos-lista" class="objetos-lista">
+              <p class="empty-msg">Nenhum objeto adicionado ainda.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA 4: LEVANTAMENTO FOTOGRÁFICO -->
+        <div id="tab-fotos" class="tab-pane">
+          <h2>📸 Capítulo 3. Levantamento Fotográfico</h2>
+          <p class="help-text">Adicione as fotos periciais. A primeira foto receberá por padrão a legenda "Objeto(s) aportado(s) neste setor.". No documento `.docx`, as fotos terão altura mínima de 8cm sem deformação.</p>
+
+          <div class="card">
+            <input type="file" id="input-fotos-upload" accept="image/jpeg,image/png" multiple style="display:none">
+            <button type="button" id="btn-trigger-foto-upload" class="btn btn-secondary">
+              📷 Selecionar / Adicionar Fotos Periciais
+            </button>
+          </div>
+
+          <div id="fotos-gallery" class="fotos-gallery mt-3">
+            <p class="empty-msg">Nenhuma foto adicionada ao levantamento fotográfico.</p>
+          </div>
+        </div>
+
+        <!-- ABA 5: FECHAMENTO & ASSINATURA -->
+        <div id="tab-fechamento" class="tab-pane">
+          <h2>✍️ Considerações Finais & Assinatura</h2>
+          
+          <fieldset class="form-section">
+            <legend>Fechamento do Laudo</legend>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="input-lacre-saida">Lacre de Saída / Invólucro de Devolução</label>
+                <input type="text" id="input-lacre-saida" placeholder="ex: invólucro plástico (de lacre informado na capa deste laudo)">
+              </div>
+              <div class="form-group">
+                <label for="input-data-elaboracao">Data e Local de Elaboração por Extenso</label>
+                <input type="text" id="input-data-elaboracao" placeholder="ex: Americana, 29 de agosto de 2026">
+              </div>
+              <div class="form-group">
+                <label for="input-nome-perito">Nome do Perito Criminal</label>
+                <input type="text" id="input-nome-perito" placeholder="ex: Perito Criminal Signatário">
+              </div>
+              <div class="form-group full-width">
+                <label for="input-texto-fechamento-custom">Texto Adicional das Considerações Finais</label>
+                <textarea id="input-texto-fechamento-custom" rows="3" placeholder="Informações adicionais do fechamento (opcional)..."></textarea>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAINEL DIREITO: PRÉ-VISUALIZAÇÃO AO VIVO EDITÁVEL DA FOLHA A4 -->
+    <section class="preview-panel">
+      <div class="preview-toolbar">
+        <span>📄 Pré-Visualização do Laudo (Editável na tela)</span>
+        <div class="toolbar-actions">
+          <small>As alterações digitadas na pré-visualização são salvas automaticamente!</small>
+        </div>
+      </div>
+
+      <div class="a4-container">
+        <div class="a4-page" id="document-preview-page">
+          <!-- CABEÇALHO DA PÁGINA -->
+          <div class="preview-header">
+            <img src="cabecalho.png" alt="Cabeçalho SPTC IC" class="cabecalho-img" id="preview-cabecalho-img">
+          </div>
+
+          <!-- CONTEÚDO DO LAUDO EDITÁVEL -->
+          <div class="preview-body" contenteditable="true" id="preview-editable-content">
+            <!-- PREÂMBULO -->
+            <p id="pv-preambulo" class="document-p text-justify">
+              Em <span class="pv-field" id="pv-data-designacao">[Data da designação]</span>, no Núcleo de Perícias Criminalísticas de Americana, do Instituto de Criminalística, da Superintendência da Polícia Técnico-Científica, da Secretaria de Negócios de Segurança Pública do Estado de São Paulo, em conformidade com o disposto no Decreto-Lei n.º 3.689/41 combinado com os Decretos n.º 42.815/08 e n.º 42.847/08, o Diretor deste Instituto de Criminalística, designou o Perito Criminal signatário para proceder a este exame pericial, em atendimento à requisição protocolada sob n.º <span class="pv-field" id="pv-protocolo">[Protocolo]</span>, laudo <span class="pv-field" id="pv-laudo-num">[Número do Laudo]</span>.
+            </p>
+
+            <!-- 1. OBJETIVO -->
+            <h3 class="document-h3">OBJETIVO</h3>
+            <p id="pv-objetivo" class="document-p text-justify">
+              O objetivo deste exame pericial é atender a requisição relacionada ao BO Nº <span class="pv-field" id="pv-bo-num">[Número BO]</span> (Elaboração: <span class="pv-field" id="pv-del-elaboracao">[Del. Elaboração]</span> e Circunscrição: <span class="pv-field" id="pv-del-circunscricao">[Del. Circunscrição]</span>), tendo como natureza de exame: "<span class="pv-field" id="pv-natureza-exame">[Natureza do Exame]</span>".
+            </p>
+            <p id="pv-lacres" class="document-p text-justify">
+              O(s) objeto(s) descrito(s) estava(m) acondicionado(s) em <span class="pv-field" id="pv-lacres-entrada">[invólucro plástico de lacre nº ...]</span>.
+            </p>
+
+            <!-- 2. DO OBJETO E DOS EXAMES -->
+            <h3 class="document-h3">DO(S) OBJETO(S) E DOS EXAMES</h3>
+            <div id="pv-objetos-container">
+              <p class="document-p text-justify">[Descrição do(s) objeto(s) e exames efetuados]</p>
+            </div>
+
+            <!-- 3. LEVANTAMENTO FOTOGRÁFICO -->
+            <h3 class="document-h3">LEVANTAMENTO FOTOGRÁFICO</h3>
+            <div id="pv-fotos-container" class="preview-fotos-layout">
+              <!-- Fotos renderizadas dinamicamente -->
+            </div>
+
+            <!-- DAS CONSIDERAÇÕES FINAIS -->
+            <h3 class="document-h3">DAS CONSIDERAÇÕES FINAIS</h3>
+            <p id="pv-consideracoes-finais" class="document-p text-justify">
+              O(s) objetos(s) descrito(s) segue(m) em <span class="pv-field" id="pv-lacre-saida">invólucro(s) plástico(s) (de lacre informado na capa deste laudo)</span> anexo a este laudo pericial que possui <span id="pv-total-paginas">X</span> (<span id="pv-total-paginas-extenso">X</span>) páginas, incluindo capa, ficando assinado digitalmente nos termos da MP nº2200-2/2001 de 24/08/2001.
+            </p>
+
+            <div class="signature-block">
+              <p id="pv-data-elaboracao" class="text-center">[Local e Data por extenso]</p>
+              <br><br>
+              <div class="signature-line"></div>
+              <p id="pv-nome-perito" class="text-center"><strong>[Nome do Perito Criminal]</strong><br>Perito Criminal</p>
+            </div>
+          </div>
+
+          <!-- RODAPÉ DA PÁGINA -->
+          <div class="preview-footer">
+            <hr>
+            <div class="footer-content">
+              <span>Laudo nº <span id="pv-footer-laudo">000000/2026</span> - Fls. <span id="pv-footer-pagina">2</span></span>
+              <span>Instituto de Criminalística - SPTC</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
