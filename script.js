@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with PWA, Offline, Multi-Lacre, Image Rotation & DOCX Arial 12 Formatting
+// Main Application Script with Advanced OCR Detection, Multi-Lacre, Auto-Object Generation & DOCX 1.5 Spacing
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const tag = document.createElement('div');
       tag.className = 'lacre-tag';
       tag.innerHTML = `
-        <span><strong>${lacre.letra}.</strong> Lacre nº ${lacre.numero}</span>
+        <span><strong>${laudoState.lacres.length > 1 ? `${lacre.letra}. ` : ''}</strong>Lacre nº ${lacre.numero}</span>
         ${laudoState.lacres.length > 1 ? `<span class="remove-btn" onclick="removerLacre(${lacre.id})">×</span>` : ''}
       `;
       lacresContainer.appendChild(tag);
@@ -265,7 +265,9 @@ document.addEventListener('DOMContentLoaded', () => {
     laudoState.lacres.forEach(lacre => {
       const opt = document.createElement('option');
       opt.value = lacre.id;
-      opt.innerText = `Lacre ${lacre.letra}. (nº ${lacre.numero})`;
+      opt.innerText = laudoState.lacres.length > 1 
+        ? `Lacre ${lacre.letra}. (nº ${lacre.numero})` 
+        : `Lacre nº ${lacre.numero}`;
       selectObjetoLacre.appendChild(opt);
     });
   }
@@ -292,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==========================================
-  // FORMULÁRIO DINÂMICO DE OBJETOS
+  // FORMULÁRIO DINÂMICO E OPÇÃO "[OMITIR]"
   // ==========================================
   function renderDynamicForm(category) {
     formDinamicoObjeto.innerHTML = '';
@@ -308,6 +310,12 @@ document.addEventListener('DOMContentLoaded', () => {
       let inputEl;
       if (campo.tipo === 'select') {
         inputEl = document.createElement('select');
+
+        const optOmitir = document.createElement('option');
+        optOmitir.value = "[Omitir]";
+        optOmitir.innerText = "-- Omitir (não mencionar) --";
+        inputEl.appendChild(optOmitir);
+
         campo.opcoes.forEach(opt => {
           const option = document.createElement('option');
           option.value = opt;
@@ -349,20 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    let descFormatada = cat.modelo_descricao;
-    Object.keys(campoValues).forEach(key => {
-      const val = campoValues[key] || '';
-      descFormatada = descFormatada.replace(new RegExp(`\\{${key}\\}`, 'g'), val);
-    });
-
-    descFormatada = descFormatada.replace(/\{[a-zA-Z0-9_]+\}/g, '').replace(/\s+/g, ' ').replace(/\s+\./g, '.');
-
-    if (campoValues.sim_cards) {
-      descFormatada += ` Anexo ao aparelho havia ${campoValues.sim_cards}.`;
-    }
-    if (campoValues.cartao_memoria) {
-      descFormatada += ` Continha cartão de memória ${campoValues.cartao_memoria}.`;
-    }
+    const descFormatada = buildFormattedDescription(cat.modelo_descricao, campoValues);
 
     const lacreIdSelected = parseInt(selectObjetoLacre.value) || laudoState.lacres[0].id;
 
@@ -382,6 +377,37 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
   });
 
+  function buildFormattedDescription(template, campoValues) {
+    let desc = template;
+
+    Object.keys(campoValues).forEach(key => {
+      const val = campoValues[key] || '';
+
+      if (!val || val === '[Omitir]') {
+        desc = desc.replace(new RegExp(`;\\s*\\{${key}\\}`, 'g'), '');
+        desc = desc.replace(new RegExp(`\\{${key}\\}\\s*;`, 'g'), '');
+        desc = desc.replace(new RegExp(`\\{${key}\\}`, 'g'), '');
+      } else {
+        desc = desc.replace(new RegExp(`\\{${key}\\}`, 'g'), val);
+      }
+    });
+
+    desc = desc.replace(/\{[a-zA-Z0-9_]+\}/g, '')
+               .replace(/;\s*;/g, ';')
+               .replace(/;\s*\./g, '.')
+               .replace(/\s+/g, ' ')
+               .replace(/\s+\./g, '.');
+
+    if (campoValues.sim_cards && campoValues.sim_cards !== '[Omitir]') {
+      desc += ` Anexo ao aparelho havia ${campoValues.sim_cards}.`;
+    }
+    if (campoValues.cartao_memoria && campoValues.cartao_memoria !== '[Omitir]') {
+      desc += ` Continha cartão de memória ${campoValues.cartao_memoria}.`;
+    }
+
+    return desc;
+  }
+
   function renderObjetosLista() {
     objetosLista.innerHTML = '';
     if (laudoState.objetos.length === 0) {
@@ -395,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
       item.className = 'objeto-item';
       item.innerHTML = `
         <div>
-          <strong>Item ${idx + 1} (${lacreObj ? `Lacre ${lacreObj.letra}.` : ''}) - ${obj.categoriaNome}</strong>
+          <strong>Item ${idx + 1} ${laudoState.lacres.length > 1 ? `(Lacre ${lacreObj ? lacreObj.letra : ''}.)` : ''} - ${obj.categoriaNome}</strong>
           <p style="font-size: 0.8rem; color: #475569; margin-top: 0.2rem;">${obj.descricaoFormatada}</p>
         </div>
         <button type="button" class="btn btn-danger btn-sm" onclick="removerObjeto(${obj.id})">🗑️ Excluir</button>
@@ -483,7 +509,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
-      // Rotacionar 90 graus no sentido horário
       canvas.width = img.height;
       canvas.height = img.width;
 
@@ -528,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==========================================
-  // OCR & PARSER INTELIGENTE DE TEXTO
+  // OCR & PARSER INTELIGENTE DE LACRES E OBJETOS
   // ==========================================
   btnParseText.addEventListener('click', () => {
     const text = ocrPastedText.value;
@@ -647,11 +672,15 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Natureza: ${naturezaMatch[1].trim()}`);
     }
 
-    const lacreMatches = text.matchAll(/(?:lacre\s*n?º?\s*|invólucro\s*n?º?\s*)(\d{5,8})/gi);
+    const lacreRegex = /(?:lacre|invólucro)(?:[^\d\n]{0,35})?(\b\d{6,7}\b)/gi;
     const lacresEncontrados = [];
-    for (const match of lacreMatches) {
-      lacresEncontrados.push(match[1]);
+    let lMatch;
+    while ((lMatch = lacreRegex.exec(text)) !== null) {
+      if (!lacresEncontrados.includes(lMatch[1])) {
+        lacresEncontrados.push(lMatch[1]);
+      }
     }
+
     if (lacresEncontrados.length > 0) {
       laudoState.lacres = lacresEncontrados.map((num, idx) => ({
         id: Date.now() + idx,
@@ -659,7 +688,7 @@ document.addEventListener('DOMContentLoaded', () => {
         numero: num
       }));
       renderLacresUI();
-      detected.push(`Lacre(s): ${lacresEncontrados.join(', ')}`);
+      detected.push(`Lacre(s) Encontrado(s): ${lacresEncontrados.join(', ')}`);
     }
 
     const dataMatch = text.match(/(?:Em\s*)(\d{1,2}\s+de\s+[a-zç]+\s+de\s+\d{4})/i);
@@ -669,6 +698,13 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Data Designação: ${dataMatch[1].trim()}`);
     }
 
+    const objetosDetectados = extractObjectsFromText(text);
+    if (objetosDetectados.length > 0) {
+      laudoState.objetos = objetosDetectados;
+      renderObjetosLista();
+      detected.push(`Objeto(s) Auto-Detectado(s): ${objetosDetectados.length} item(ns)`);
+    }
+
     if (detected.length > 0) {
       ocrResultsSummary.classList.remove('hidden');
       ocrDetectedFieldsList.innerHTML = detected.join('<br>');
@@ -676,6 +712,60 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       alert('Não foi possível identificar campos automaticamente no texto fornecido.');
     }
+  }
+
+  function extractObjectsFromText(text) {
+    const objetos = [];
+    const marcasConhecidas = ['Samsung', 'Motorola', 'Xiaomi', 'Redmi', 'Apple', 'iPhone', 'LG', 'Nokia', 'Asus', 'Positivo', 'Decwin', 'L8star'];
+    
+    let marcaEncontrada = 'Motorola';
+    for (const m of marcasConhecidas) {
+      if (new RegExp(`\\b${m}\\b`, 'i').test(text)) {
+        marcaEncontrada = m;
+        break;
+      }
+    }
+
+    let modeloEncontrado = '';
+    const modeloMatch = text.match(/(?:modelo\s*|modelo:\s*)([A-Z0-9\s-]+)/i) || text.match(/\b(Galaxy\s+[A-Z0-9]+|Redmi\s+[A-Z0-9]+|Moto\s+[A-Z0-9]+|XT\d{4}|BM30)\b/i);
+    if (modeloMatch) {
+      modeloEncontrado = modeloMatch[1].trim();
+    }
+
+    const imeiMatches = Array.from(text.matchAll(/\b(\d{15})\b/g)).map(m => m[1]);
+    const imei1 = imeiMatches[0] || '';
+    const imei2 = imeiMatches[1] || '';
+
+    const snMatch = text.match(/(?:S\/N|SN|Serial)\s*:\s*([A-Z0-9]+)/i);
+    const sn = snMatch ? snMatch[1].trim() : '';
+
+    let estadoOp = 'operante';
+    if (/não\s+funcional|não\s+apresentou\s+funcionamento/i.test(text)) {
+      estadoOp = 'não apresentou funcionamento';
+    } else if (/dano|amolgamento|fratura/i.test(text)) {
+      estadoOp = 'apresentando danos fisicos';
+    }
+
+    if (imei1 || modeloEncontrado || marcaEncontrada) {
+      const desc = `01 (um) aparelho móvel de comunicação (smartphone); de marca de fabricação ${marcaEncontrada}${modeloEncontrado ? `, modelo ${modeloEncontrado}` : ''}; ${estadoOp}; ${imei1 ? `IMEI ${imei1}` : ''}${imei2 ? ` e ${imei2}` : ''}${sn ? `, SN: ${sn}` : ''}.`;
+      
+      objetos.push({
+        id: Date.now(),
+        lacreId: laudoState.lacres[0] ? laudoState.lacres[0].id : 1,
+        categoriaNome: 'Aparelho Celular (Smartphone)',
+        descricaoFormatada: desc,
+        campos: {
+          marca: marcaEncontrada,
+          modelo: modeloEncontrado,
+          estado_op: estadoOp,
+          imei1: imei1,
+          imei2: imei2,
+          sn: sn
+        }
+      });
+    }
+
+    return objetos;
   }
 
   // ==========================================
@@ -727,38 +817,46 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('pv-del-circunscricao').innerText = laudoState.objetivo.delCircunscricao || '[Del. Circunscrição]';
     document.getElementById('pv-natureza-exame').innerText = laudoState.objetivo.naturezaExame || '[Natureza]';
 
-    // Texto resumo dos lacres no capítulo 1
     const lacresResumoText = laudoState.lacres.length === 1 
       ? `invólucro plástico de lacre nº ${laudoState.lacres[0].numero}`
       : `invólucros plásticos de lacres nº ${laudoState.lacres.map(l => l.numero).join(', ')}`;
     document.getElementById('pv-lacres-resumo').innerHTML = `O(s) objeto(s) descrito(s) estava(m) acondicionado(s) em <span class="pv-field">${lacresResumoText}</span>.`;
 
-    // Capítulo 2: Objetos agrupados por Lacre com subtítulos letrados (a., b., c.)
     const pvObjetosContainer = document.getElementById('pv-objetos-container');
     pvObjetosContainer.innerHTML = '';
 
     if (laudoState.objetos.length === 0) {
       pvObjetosContainer.innerHTML = '<p class="document-p text-justify">[Descrição do(s) objeto(s) e exames efetuados]</p>';
     } else {
-      laudoState.lacres.forEach(lacre => {
-        const objetosDoLacre = laudoState.objetos.filter(o => o.lacreId === lacre.id);
-        if (objetosDoLacre.length > 0) {
-          const subTitle = document.createElement('p');
-          subTitle.className = 'document-sublacre';
-          subTitle.innerText = `${lacre.letra}. Objeto(s) acondicionado(s) no invólucro plástico de lacre nº ${lacre.numero}:`;
-          pvObjetosContainer.appendChild(subTitle);
+      // Se houver apenas 1 lacre, listar os objetos diretamente sem subtítulo letrado (a. b. c.)
+      if (laudoState.lacres.length <= 1) {
+        laudoState.objetos.forEach(obj => {
+          const p = document.createElement('p');
+          p.className = 'document-p text-justify';
+          p.innerText = obj.descricaoFormatada;
+          pvObjetosContainer.appendChild(p);
+        });
+      } else {
+        // Se houver mais de 1 lacre, criar subtítulos ordenados (a. b. c.)
+        laudoState.lacres.forEach(lacre => {
+          const objetosDoLacre = laudoState.objetos.filter(o => o.lacreId === lacre.id);
+          if (objetosDoLacre.length > 0) {
+            const subTitle = document.createElement('p');
+            subTitle.className = 'document-sublacre';
+            subTitle.innerText = `${lacre.letra}. Objeto(s) acondicionado(s) no invólucro plástico de lacre nº ${lacre.numero}:`;
+            pvObjetosContainer.appendChild(subTitle);
 
-          objetosDoLacre.forEach(obj => {
-            const p = document.createElement('p');
-            p.className = 'document-p text-justify';
-            p.innerText = obj.descricaoFormatada;
-            pvObjetosContainer.appendChild(p);
-          });
-        }
-      });
+            objetosDoLacre.forEach(obj => {
+              const p = document.createElement('p');
+              p.className = 'document-p text-justify';
+              p.innerText = obj.descricaoFormatada;
+              pvObjetosContainer.appendChild(p);
+            });
+          }
+        });
+      }
     }
 
-    // Fotos
     const pvFotosContainer = document.getElementById('pv-fotos-container');
     pvFotosContainer.innerHTML = '';
     if (laudoState.fotos.length > 0) {
@@ -773,14 +871,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Fechamento
     document.getElementById('pv-lacre-saida').innerText = laudoState.fechamento.lacreSaida || '[Lacre Saída]';
     document.getElementById('pv-data-elaboracao').innerText = laudoState.fechamento.dataElaboracao || '[Local e Data]';
     document.getElementById('pv-nome-perito').innerHTML = `<strong>${laudoState.fechamento.nomePerito || '[Nome do Perito]'}</strong><br>Perito Criminal`;
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (ARIAL 12)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (ARIAL 12, ESPAÇAMENTO 1.5, JUSTIFICADO)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -802,12 +899,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const docParagraphs = [];
 
-      // 1. PREÂMBULO (Arial 12pt, Justificado, 1ª Linha Tabulada)
+      // 1. PREÂMBULO (Arial 12pt, Espaçamento 1.5, Justificado, Recuo 1ª Linha)
       docParagraphs.push(
         new Paragraph({
           alignment: AlignmentType.JUSTIFY,
           indent: { firstLine: 709 }, // 1.25 cm
-          spacing: { line: 276, after: 200 },
+          spacing: { line: 360, after: 200 },
           children: [
             new TextRun({ text: `Em ${laudoState.preambulo.dataDesignacao}, no Núcleo de Perícias Criminalísticas de Americana, do Instituto de Criminalística, da Superintendência da Polícia Técnico-Científica, da Secretaria de Negócios de Segurança Pública do Estado de São Paulo, em conformidade com o disposto no Decreto-Lei n.º 3.689/41 combinado com os Decretos n.º 42.815/08 e n.º 42.847/08, o Diretor deste Instituto de Criminalística, designou o Perito Criminal signatário para proceder a este exame pericial, em atendimento à requisição protocolada sob n.º `, font: "Arial", size: 24 }),
             new TextRun({ text: laudoState.preambulo.protocolo, bold: true, font: "Arial", size: 24 }),
@@ -818,7 +915,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       );
 
-      // 2. OBJETIVO (Título Numerado em Negrito à Esquerda com Tabulação)
+      // 2. OBJETIVO
       docParagraphs.push(
         new Paragraph({
           alignment: AlignmentType.LEFT,
@@ -828,7 +925,7 @@ document.addEventListener('DOMContentLoaded', () => {
         new Paragraph({
           alignment: AlignmentType.JUSTIFY,
           indent: { firstLine: 709 },
-          spacing: { line: 276, after: 150 },
+          spacing: { line: 360, after: 150 },
           children: [
             new TextRun({ text: `O objetivo deste exame pericial é atender a requisição relacionada ao BO Nº ${laudoState.objetivo.boNum} (Elaboração: ${laudoState.objetivo.delElaboracao} e Circunscrição: ${laudoState.objetivo.delCircunscricao}), tendo como natureza de exame: "${laudoState.objetivo.naturezaExame}".`, font: "Arial", size: 24 })
           ]
@@ -843,7 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
         new Paragraph({
           alignment: AlignmentType.JUSTIFY,
           indent: { firstLine: 709 },
-          spacing: { line: 276, after: 250 },
+          spacing: { line: 360, after: 250 },
           children: [
             new TextRun({ text: `O(s) objeto(s) descrito(s) estava(m) acondicionado(s) em ${lacresResumoDocx}.`, font: "Arial", size: 24 })
           ]
@@ -864,38 +961,52 @@ document.addEventListener('DOMContentLoaded', () => {
           new Paragraph({
             alignment: AlignmentType.JUSTIFY,
             indent: { firstLine: 709 },
-            spacing: { line: 276, after: 200 },
+            spacing: { line: 360, after: 200 },
             children: [new TextRun({ text: "[Nenhum objeto cadastrado]", italic: true, font: "Arial", size: 24 })]
           })
         );
       } else {
-        laudoState.lacres.forEach(lacre => {
-          const objetosDoLacre = laudoState.objetos.filter(o => o.lacreId === lacre.id);
-          if (objetosDoLacre.length > 0) {
-            // Subtítulo do lacre (a., b., c.)
+        // Se houver apenas 1 lacre, não gerar subtítulos ordenados (a. b. c.)
+        if (laudoState.lacres.length <= 1) {
+          laudoState.objetos.forEach(obj => {
             docParagraphs.push(
               new Paragraph({
                 alignment: AlignmentType.JUSTIFY,
                 indent: { firstLine: 709 },
-                spacing: { before: 150, after: 100 },
-                children: [
-                  new TextRun({ text: `${lacre.letra}. Objeto(s) acondicionado(s) no invólucro plástico de lacre nº ${lacre.numero}:`, bold: true, font: "Arial", size: 24 })
-                ]
+                spacing: { line: 360, after: 200 },
+                children: [new TextRun({ text: obj.descricaoFormatada, font: "Arial", size: 24 })]
               })
             );
-
-            objetosDoLacre.forEach(obj => {
+          });
+        } else {
+          // Se houver mais de 1 lacre, gerar subtítulos ordenados (a. b. c.)
+          laudoState.lacres.forEach(lacre => {
+            const objetosDoLacre = laudoState.objetos.filter(o => o.lacreId === lacre.id);
+            if (objetosDoLacre.length > 0) {
               docParagraphs.push(
                 new Paragraph({
                   alignment: AlignmentType.JUSTIFY,
                   indent: { firstLine: 709 },
-                  spacing: { line: 276, after: 200 },
-                  children: [new TextRun({ text: obj.descricaoFormatada, font: "Arial", size: 24 })]
+                  spacing: { line: 360, before: 150, after: 100 },
+                  children: [
+                    new TextRun({ text: `${lacre.letra}. Objeto(s) acondicionado(s) no invólucro plástico de lacre nº ${lacre.numero}:`, bold: true, font: "Arial", size: 24 })
+                  ]
                 })
               );
-            });
-          }
-        });
+
+              objetosDoLacre.forEach(obj => {
+                docParagraphs.push(
+                  new Paragraph({
+                    alignment: AlignmentType.JUSTIFY,
+                    indent: { firstLine: 709 },
+                    spacing: { line: 360, after: 200 },
+                    children: [new TextRun({ text: obj.descricaoFormatada, font: "Arial", size: 24 })]
+                  })
+                );
+              });
+            }
+          });
+        }
       }
 
       // 4. LEVANTAMENTO FOTOGRÁFICO
@@ -957,7 +1068,7 @@ document.addEventListener('DOMContentLoaded', () => {
         new Paragraph({
           alignment: AlignmentType.JUSTIFY,
           indent: { firstLine: 709 },
-          spacing: { line: 276, after: 250 },
+          spacing: { line: 360, after: 250 },
           children: [
             new TextRun({ text: `O(s) objetos(s) descrito(s) segue(m) em ${laudoState.fechamento.lacreSaida} anexo a este laudo pericial, ficando assinado digitalmente nos termos da MP nº2200-2/2001 de 24/08/2001.`, font: "Arial", size: 24 })
           ]
