@@ -23,7 +23,7 @@
       "id": "mini_celular",
       "nome": "Mini Celular",
       "icone": "📱",
-      "modelo_descricao": "01 (um) aparelho móvel de telecomunicação (mini celular); {estado_uso}; de marca de fabricação aparente {marca}, modelo {modelo}; de cor {cor}; {bateria}; ostentava etiqueta interna: IMEI1: {imei1} e S/N: {sn}; {estado_op}.",
+      "modelo_descricao": "01 (um) aparelho móvel de telecomunicação (mini celular); {estado_uso}; de marca de fabricação aparente {marca}, modelo {modelo}; de cor {cor}; {bateria}; IMEI 1: {imei1}{imei2}{sn}; {estado_op}.",
       "campos": [
         { "id": "quantidade", "label": "Quantidade", "tipo": "number", "default": 1 },
         { "id": "marca", "label": "Marca Aparente", "tipo": "text", "placeholder": "ex: DECWIN, L8STAR" },
@@ -31,9 +31,12 @@
         { "id": "cor", "label": "Cor", "tipo": "text", "placeholder": "ex: preta, dourada" },
         { "id": "estado_uso", "label": "Estado de Uso", "tipo": "select", "opcoes": ["usado", "novo", "com desgaste de uso"] },
         { "id": "bateria", "label": "Bateria", "tipo": "select", "opcoes": ["contendo bateria", "sem bateria", "bateria danificada"] },
-        { "id": "imei1", "label": "IMEI 1", "tipo": "text" },
-        { "id": "sn", "label": "Número de Série (S/N)", "tipo": "text" },
-        { "id": "estado_op", "label": "Funcionamento", "tipo": "select", "opcoes": ["não apresentou funcionamento", "apresentou funcionamento"] }
+        { "id": "estado_op", "label": "Funcionamento", "tipo": "select", "opcoes": ["não apresentou funcionamento", "apresentou funcionamento"] },
+        { "id": "imei1", "label": "IMEI 1", "tipo": "text", "placeholder": "Ex: 355180032731045" },
+        { "id": "imei2", "label": "IMEI 2", "tipo": "text", "placeholder": "Ex: 355180032731052 (opcional)" },
+        { "id": "sn", "label": "Número de Série (S/N)", "tipo": "text", "placeholder": "Ex: 2025030108263 (opcional)" },
+        { "id": "sim_cards", "label": "SIM Cards / CHIPs", "tipo": "text", "placeholder": "Ex: 01 CHIP da operadora TIM" },
+        { "id": "cartao_memoria", "label": "Cartão de Memória", "tipo": "text", "placeholder": "Ex: MicroSD 16GB" }
       ]
     },
     {

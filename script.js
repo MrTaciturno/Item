@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Legal Note Diminutive Footer and Page Numbering
+// Main Application Script with Updated Mini Celular Compendio & Template Formatting
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -380,7 +380,22 @@ document.addEventListener('DOMContentLoaded', () => {
   function buildFormattedDescription(template, campoValues) {
     let desc = template;
 
+    // Tratamento especial para IMEI2 se preenchido
+    if (campoValues.imei2 && campoValues.imei2.trim() && campoValues.imei2.trim() !== '[Omitir]') {
+      desc = desc.replace('{imei2}', ` e IMEI 2: ${campoValues.imei2.trim()}`);
+    } else {
+      desc = desc.replace('{imei2}', '');
+    }
+
+    // Tratamento especial para SN se preenchido
+    if (campoValues.sn && campoValues.sn.trim() && campoValues.sn.trim() !== '[Omitir]') {
+      desc = desc.replace('{sn}', `, S/N: ${campoValues.sn.trim()}`);
+    } else {
+      desc = desc.replace('{sn}', '');
+    }
+
     Object.keys(campoValues).forEach(key => {
+      if (key === 'imei2' || key === 'sn') return; // já tratados acima
       const val = (campoValues[key] || '').trim();
 
       if (!val || val === '[Omitir]') {
