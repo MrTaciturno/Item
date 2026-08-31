@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with 100% Pure Live Preview DOM Export & Static Calculated Page Count
+// Main Application Script with Refined OCR Extraction for Google Lens & Official Requisitions
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -59,6 +59,29 @@ document.addEventListener('DOMContentLoaded', () => {
       10: 'dez'
     };
     return extensos[n] || `${n}`;
+  }
+
+  // ==========================================
+  // HELPER FORMATAÇÃO DE NOME DE DELEGACIA
+  // ==========================================
+  function formatDelegaciaName(rawName) {
+    if (!rawName) return '';
+    const raw = rawName.trim();
+    if (/^\d+[\s°º]*d\.?p\.?/i.test(raw)) {
+      const num = raw.match(/^(\d+)/)[1];
+      const rest = raw.replace(/^\d+[\s°º]*d\.?p\.?\s*/i, '');
+      const cleanRest = rest.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      return `${parseInt(num)}DP ${cleanRest}`;
+    }
+    let str = raw.replace(/^\d+[-_\s]*/, '').replace(/^DEL\.?\s*POL\.?\s*/i, 'Del. Pol. ');
+    if (!str.toLowerCase().startsWith('del') && !/^\d+/.test(str)) {
+      str = 'Del. Pol. ' + str;
+    }
+    return str.split(/\s+/).map(word => {
+      if (word.toUpperCase() === 'DEL.' || word.toUpperCase() === 'POL.') return word;
+      if (/^\d+D\.?P\.?$/i.test(word) || word.toUpperCase() === 'D.P.' || word.toUpperCase() === 'DDM' || word.toUpperCase() === '1DP') return word.toUpperCase();
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' ');
   }
 
   // ==========================================
@@ -589,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==========================================
-  // OCR & PARSER INTELIGENTE CORRIGIDO
+  // OCR & PARSER INTELIGENTE REFINADO PARA GOOGLE LENS E REQUISIÇÕES OFICIAIS
   // ==========================================
   btnParseText.addEventListener('click', () => {
     const text = ocrPastedText.value;
@@ -660,11 +683,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function parseAndFillText(rawText) {
-    const text = rawText.replace(/\s+/g, ' ');
+    const text = rawText.replace(/\r/g, '');
+    const cleanSingleLine = rawText.replace(/\s+/g, ' ');
     const detected = [];
 
-    // Protocolo
-    const protocoloMatch = text.match(/(?:protocolo|protocolada|sob\s*n?º?\s*)\s*([P|p]\s*[\d\s\/]+)/i) || text.match(/\b(P\s*\d{4,5}\/\d{2})\b/i);
+    // 1. Protocolo (ex: P01934/26 ou P01412/26)
+    const protocoloMatch = text.match(/(?:protocolo[^\n]*?)\s*([P|p]\s*[\d\s\/]+)/i) 
+                        || cleanSingleLine.match(/\b(P\s*\d{4,5}\/\d{2})\b/i);
     if (protocoloMatch) {
       const cleanProtocolo = protocoloMatch[1].replace(/\s+/g, '');
       laudoState.preambulo.protocolo = cleanProtocolo;
@@ -672,8 +697,9 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Protocolo: ${cleanProtocolo}`);
     }
 
-    // Número do Laudo
-    const laudoMatch = text.match(/(?:laudo|laudo\s*n?º?\s*)\s*(\d{5,7}\s*\/\s*\d{4})/i);
+    // 2. Número do Laudo (ex: 330272/26 ou 162836/2026)
+    const laudoMatch = text.match(/(?:laudo|laudo\s*n?[º°]?\s*)\s*(\d{5,7}\s*\/\s*\d{2,4})/i) 
+                    || cleanSingleLine.match(/\b(\d{5,7}\s*\/\s*\d{2,4})\b/i);
     if (laudoMatch) {
       const cleanLaudo = laudoMatch[1].replace(/\s+/g, '');
       laudoState.preambulo.laudoNum = cleanLaudo;
@@ -681,44 +707,54 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Nº Laudo: ${cleanLaudo}`);
     }
 
-    // BO
-    const boMatch = text.match(/(?:BO\s*N?º?\s*|boletim\s*n?º?\s*)([A-Z]{2}\d{4,6}-\d\/\d{4})/i) || text.match(/\b([A-Z]{2}\d{4,6}-\d\/\d{4})\b/i);
+    // 3. BO (ex: CX0037-1/2026 ou EM7833-1/2026)
+    const boMatch = text.match(/(?:BO\s*N?[º°]?\s*:?\s*|boletim\s*n?[º°]?\s*:?\s*)([A-Z]{2}\d{4,6}-\d\/\d{4})/i) 
+                 || cleanSingleLine.match(/\b([A-Z]{2}\d{4,6}-\d\/\d{4})\b/i);
     if (boMatch) {
       laudoState.objetivo.boNum = boMatch[1].trim();
       inputBoNum.value = boMatch[1].trim();
       detected.push(`BO: ${boMatch[1].trim()}`);
     }
 
-    // Delegacia de Elaboração
-    const elabMatch = text.match(/Elabora[^\s:]*\s*:\s*([^;\)\n]+?)(?=\s*e\s*Circunscri|\s*Circunscri|\s*\)|$)/i)
-                   || text.match(/(?:Del\.?\s*Pol\.?\s*[^;\)\n]+?)(?=\s*e\s*Circunscri|\s*Circunscri|\s*\)|$)/i);
-    if (elabMatch) {
-      let val = (elabMatch[1] || elabMatch[0]).trim();
-      if (!val.toLowerCase().startsWith('del')) val = 'Del. Pol. ' + val;
-      laudoState.objetivo.delElaboracao = val;
-      inputDelElaboracao.value = val;
-      detected.push(`Del. Elaboração: ${val}`);
+    // 4. Delegacia de Elaboração (ex: Delegacia: 805-DEL.POL PLANTÃO HORTOLÂNDIA ou Elaboração : Del. Pol. Monte Mor)
+    let delElaboracao = '';
+    const elabMatchLens = text.match(/Delegacia\s*:\s*(?:\d+[-_\s]*)?([^\n\r,]+)/i);
+    const elabMatchPara = cleanSingleLine.match(/Elabora[^\s:]*\s*:\s*([^;\)\n\r]+?)(?=\s*e\s*Circunscri|\s*Circunscri|\s*\)|$)/i);
+    if (elabMatchLens) {
+      delElaboracao = formatDelegaciaName(elabMatchLens[1]);
+    } else if (elabMatchPara) {
+      delElaboracao = formatDelegaciaName(elabMatchPara[1]);
+    }
+    if (delElaboracao) {
+      laudoState.objetivo.delElaboracao = delElaboracao;
+      inputDelElaboracao.value = delElaboracao;
+      detected.push(`Del. Elaboração: ${delElaboracao}`);
     }
 
-    // Delegacia de Circunscrição
-    const circMatch = text.match(/Circunscri[^\s:]*\s*:\s*([^;\)\n]+?)(?=\s*\)|$)/i);
+    // 5. Delegacia de Circunscrição (ex: Circunscrição: 01 D.P. HORTOLANDIA ou 01° D.P. HORTOLÂNDIA)
+    let delCircunscricao = '';
+    const circMatch = text.match(/Circunscri[^\s:]*\s*:\s*([^;\)\n\r]+)/i);
     if (circMatch) {
-      laudoState.objetivo.delCircunscricao = circMatch[1].trim();
-      inputDelCircunscricao.value = circMatch[1].trim();
-      detected.push(`Del. Circunscrição: ${circMatch[1].trim()}`);
+      delCircunscricao = formatDelegaciaName(circMatch[1]);
+      laudoState.objetivo.delCircunscricao = delCircunscricao;
+      inputDelCircunscricao.value = delCircunscricao;
+      detected.push(`Del. Circunscrição: ${delCircunscricao}`);
     }
 
-    // Natureza do Exame
-    const naturezaMatch = text.match(/(?:natureza\s*de\s*exame\s*:\s*|exame\s*:\s*)["“]?([^"”\n\.]+)/i);
-    if (naturezaMatch) {
-      laudoState.objetivo.naturezaExame = naturezaMatch[1].trim();
-      inputNaturezaExame.value = naturezaMatch[1].trim();
-      detected.push(`Natureza: ${naturezaMatch[1].trim()}`);
+    // 6. Natureza / Objetivo do Exame (ex: Natureza do Exame:constatação de funcionalidade ou Objetivo da Pericia: constatação de funcionalidade)
+    let naturezaExame = '';
+    const natMatch = text.match(/(?:Natureza\s*do\s*Exame|Objetivo\s*da\s*Per[ií]cia)\s*:\s*([^"”\n\r]+)/i)
+                  || cleanSingleLine.match(/(?:natureza\s*de\s*exame\s*:\s*|exame\s*:\s*)["“]?([^"”\n\.]+)/i);
+    if (natMatch) {
+      naturezaExame = natMatch[1].trim();
+      laudoState.objetivo.naturezaExame = naturezaExame;
+      inputNaturezaExame.value = naturezaExame;
+      detected.push(`Natureza do Exame: ${naturezaExame}`);
     }
 
-    // BUSCA DE LACRES
+    // 7. BUSCA DE LACRES (ex: LACRE 030220, lacre nº 030310)
     const lacresEncontrados = [];
-    const lRegex1 = /(?:lacre|inv[oó]lucro)(?:[^\d\n]{0,35})?(\b\d{5,8}\b)/gi;
+    const lRegex1 = /(?:lacre|inv[oó]lucro)(?:[^\d\n\r]{0,35})?(\b\d{5,8}\b)/gi;
     let m1;
     while ((m1 = lRegex1.exec(text)) !== null) {
       if (!lacresEncontrados.includes(m1[1])) lacresEncontrados.push(m1[1]);
@@ -739,15 +775,16 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Lacre(s) Encontrado(s): ${lacresEncontrados.join(', ')}`);
     }
 
-    // Data da Designação
-    const dataMatch = text.match(/(?:Em\s*)(\d{1,2}\s+de\s+[a-zç]+\s+de\s+\d{4})/i);
+    // 8. Data da Designação
+    const dataMatch = text.match(/(?:Em\s*)(\d{1,2}\s+de\s+[a-zç]+\s+de\s+\d{4})/i)
+                   || text.match(/(\d{1,2}\s+[A-Z]{3}\s+\d{4})/i);
     if (dataMatch) {
       laudoState.preambulo.dataDesignacao = dataMatch[1].trim();
       inputDataDesignacao.value = dataMatch[1].trim();
       detected.push(`Data Designação: ${dataMatch[1].trim()}`);
     }
 
-    // AUTO-DETECÇÃO DE OBJETOS PERICIAIS
+    // 9. AUTO-DETECÇÃO DE OBJETOS PERICIAIS (ex: iPhone 11, IMEI 355169423223126)
     const objetosDetectados = extractObjectsFromText(text);
     if (objetosDetectados.length > 0) {
       laudoState.objetos = objetosDetectados;
@@ -771,16 +808,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let marcaEncontrada = '';
     for (const m of marcasConhecidas) {
       if (new RegExp(`\\b${m}\\b`, 'i').test(text)) {
-        marcaEncontrada = m;
+        marcaEncontrada = m === 'iPhone' ? 'Apple' : m;
         break;
       }
     }
 
     let modeloEncontrado = '';
     const modeloMatch = text.match(/(?:modelo\s*|modelo:\s*)([A-Z0-9\s-]+?)(?=;|\.|\n|IMEI|SN|S\/N|operante|bloqueado)/i) 
-                     || text.match(/\b(Galaxy\s+[A-Z0-9\s]+|Redmi\s+[A-Z0-9\s]+|Moto\s+[A-Z0-9\s]+|XT\d{4}|BM\s*\d+|BM\d+)\b/i);
+                     || text.match(/\b(iPhone\s+[A-Z0-9\s]+|Galaxy\s+[A-Z0-9\s]+|Redmi\s+[A-Z0-9\s]+|Moto\s+[A-Z0-9\s]+|XT\d{4}|BM\s*\d+|BM\d+)\b/i);
     if (modeloMatch) {
-      modeloEncontrado = modeloMatch[1].trim();
+      modeloEncontrado = modeloMatch[1] || modeloMatch[0];
+      modeloEncontrado = modeloEncontrado.trim();
     }
 
     const imeiMatches = Array.from(text.matchAll(/\b(\d{14,15})\b/g)).map(m => m[1]);
@@ -980,16 +1018,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const docParagraphs = [];
-      const totalPaginasEfetivo = calculateTotalPagesCalculated();
 
-      // PARSE 100% PURO DO CONTEÚDO DO CONTAINER EDITÁVEL DA TELA
       function processElementTree(node) {
         const children = Array.from(node.children);
 
         children.forEach(child => {
           const tagName = child.tagName.toUpperCase();
 
-          // 1. TÍTULOS (H3)
           if (tagName === 'H3') {
             const hText = cleanString(child.innerText);
             if (hText) {
@@ -1002,7 +1037,6 @@ document.addEventListener('DOMContentLoaded', () => {
               );
             }
           }
-          // 2. PARÁGRAFOS DE TEXTO (P)
           else if (tagName === 'P') {
             const pText = cleanString(child.innerText);
             if (!pText) return;
@@ -1021,7 +1055,6 @@ document.addEventListener('DOMContentLoaded', () => {
               })
             );
           }
-          // 3. CONTAINER DE FOTOS (LEVANTAMENTO FOTOGRÁFICO)
           else if (child.id === 'pv-fotos-container' || child.classList.contains('preview-fotos-layout')) {
             for (const foto of laudoState.fotos) {
               try {
@@ -1062,7 +1095,6 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             }
           }
-          // 4. CONTAINER DE OBJETOS OU ASSINATURA -> RECURSIVO PARA CAPTURAR PARÁGRAFOS INTERNOS EXATOS
           else if (child.id === 'pv-objetos-container' || child.classList.contains('signature-block-right') || child.tagName === 'DIV') {
             processElementTree(child);
           }
@@ -1071,7 +1103,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       processElementTree(previewEditableContent);
 
-      // TABELA DE RODAPÉ COM NOTA LEGAL EM LETRA DIMINUTA E NÚMERO DE PÁGINA (ESTÁTICO / WORD NATIVO)
+      // TABELA DE RODAPÉ COM NOTA LEGAL EM LETRA DIMINUTA E NÚMERO DE PÁGINA
       const legalFooterText = "Esta folha é propriedade da Superintendência da Polícia Técnico-Científica e seu conteúdo não pode ser copiado ou revelado a terceiros sem autorização expressa";
       const footerTable = new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
@@ -1091,7 +1123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 children: [
                   new Paragraph({
                     children: [
-                      new TextRun({ text: legalFooterText, font: "Arial", size: 14 }) // 7pt diminuta
+                      new TextRun({ text: legalFooterText, font: "Arial", size: 14 })
                     ]
                   })
                 ]
@@ -1117,7 +1149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sections: [{
           properties: {
             page: {
-              margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 } // 2cm
+              margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 }
             }
           },
           headers: {
