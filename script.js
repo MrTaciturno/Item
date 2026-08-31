@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Refined OCR Extraction for Google Lens & Official Requisitions
+// Main Application Script with Enhanced Handwritten Laudo & Stamped Date OCR Parser
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -14,11 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   // ESTADO GLOBAL DA APLICAÇÃO (LAUDO STATE)
   // ==========================================
+  const currentYear = new Date().getFullYear();
   const laudoState = {
     preambulo: {
-      dataDesignacao: '29 de agosto de 2026',
+      dataDesignacao: `29 de agosto de ${currentYear}`,
       protocolo: 'P01412/26',
-      laudoNum: '162836/2026'
+      laudoNum: `162836/${currentYear}`
     },
     objetivo: {
       boNum: 'EM7833-1/2026',
@@ -33,12 +34,27 @@ document.addEventListener('DOMContentLoaded', () => {
     fotos: [],
     fechamento: {
       lacreSaida: 'invólucro plástico (de lacre informado na capa deste laudo)',
-      dataElaboracao: 'Americana, 29 de agosto de 2026',
+      dataElaboracao: `Americana, 29 de agosto de ${currentYear}`,
       nomePerito: 'Perito Criminal Signatário',
       textoCustom: ''
     },
     compendioData: null,
     selectedCategory: null
+  };
+
+  const mesesMap = {
+    'JAN': 'janeiro',
+    'FEV': 'fevereiro',
+    'MAR': 'março',
+    'ABR': 'abril',
+    'MAI': 'maio',
+    'JUN': 'junho',
+    'JUL': 'julho',
+    'AGO': 'agosto',
+    'SET': 'setembro',
+    'OUT': 'outubro',
+    'NOV': 'novembro',
+    'DEZ': 'dezembro'
   };
 
   // ==========================================
@@ -612,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==========================================
-  // OCR & PARSER INTELIGENTE REFINADO PARA GOOGLE LENS E REQUISIÇÕES OFICIAIS
+  // OCR & PARSER INTELIGENTE REFINADO PARA GOOGLE LENS E MANUSCRITOS
   // ==========================================
   btnParseText.addEventListener('click', () => {
     const text = ocrPastedText.value;
@@ -697,15 +713,33 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Protocolo: ${cleanProtocolo}`);
     }
 
-    // 2. Número do Laudo (ex: 330272/26 ou 162836/2026)
-    const laudoMatch = text.match(/(?:laudo|laudo\s*n?[º°]?\s*)\s*(\d{5,7}\s*\/\s*\d{2,4})/i) 
-                    || cleanSingleLine.match(/\b(\d{5,7}\s*\/\s*\d{2,4})\b/i);
-    if (laudoMatch) {
-      const cleanLaudo = laudoMatch[1].replace(/\s+/g, '');
-      laudoState.preambulo.laudoNum = cleanLaudo;
-      inputLaudoNum.value = cleanLaudo;
-      detected.push(`Nº Laudo: ${cleanLaudo}`);
+    // 2. Número do Laudo Manuscrito / Rotulado (ex: 330272/26, 330272/2026 ou 330272; fallback: 000000/anoAtual)
+    let laudoNum = '';
+    const laudoRotulado = text.match(/(?:laudo|laudo\s*n?[º°]?\s*)\s*(\d{4,6}(?:\s*\/\s*\d{2,4})?)/i);
+    const laudoStandalone = text.match(/\b(\d{5,6}\s*\/\s*\d{2,4})\b/);
+
+    if (laudoRotulado) {
+      laudoNum = laudoRotulado[1].replace(/\s+/g, '');
+    } else if (laudoStandalone) {
+      laudoNum = laudoStandalone[1].replace(/\s+/g, '');
     }
+
+    if (laudoNum) {
+      if (!laudoNum.includes('/')) {
+        laudoNum = `${laudoNum}/${currentYear}`;
+      } else {
+        const [numPart, yearPart] = laudoNum.split('/');
+        if (yearPart.length === 2) {
+          laudoNum = `${numPart}/20${yearPart}`;
+        }
+      }
+      detected.push(`Nº Laudo Detectado: ${laudoNum}`);
+    } else {
+      laudoNum = `000000/${currentYear}`;
+      detected.push(`Nº Laudo Padrão: ${laudoNum}`);
+    }
+    laudoState.preambulo.laudoNum = laudoNum;
+    inputLaudoNum.value = laudoNum;
 
     // 3. BO (ex: CX0037-1/2026 ou EM7833-1/2026)
     const boMatch = text.match(/(?:BO\s*N?[º°]?\s*:?\s*|boletim\s*n?[º°]?\s*:?\s*)([A-Z]{2}\d{4,6}-\d\/\d{4})/i) 
@@ -716,7 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`BO: ${boMatch[1].trim()}`);
     }
 
-    // 4. Delegacia de Elaboração (ex: Delegacia: 805-DEL.POL PLANTÃO HORTOLÂNDIA ou Elaboração : Del. Pol. Monte Mor)
+    // 4. Delegacia de Elaboração
     let delElaboracao = '';
     const elabMatchLens = text.match(/Delegacia\s*:\s*(?:\d+[-_\s]*)?([^\n\r,]+)/i);
     const elabMatchPara = cleanSingleLine.match(/Elabora[^\s:]*\s*:\s*([^;\)\n\r]+?)(?=\s*e\s*Circunscri|\s*Circunscri|\s*\)|$)/i);
@@ -731,7 +765,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Del. Elaboração: ${delElaboracao}`);
     }
 
-    // 5. Delegacia de Circunscrição (ex: Circunscrição: 01 D.P. HORTOLANDIA ou 01° D.P. HORTOLÂNDIA)
+    // 5. Delegacia de Circunscrição
     let delCircunscricao = '';
     const circMatch = text.match(/Circunscri[^\s:]*\s*:\s*([^;\)\n\r]+)/i);
     if (circMatch) {
@@ -741,7 +775,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Del. Circunscrição: ${delCircunscricao}`);
     }
 
-    // 6. Natureza / Objetivo do Exame (ex: Natureza do Exame:constatação de funcionalidade ou Objetivo da Pericia: constatação de funcionalidade)
+    // 6. Natureza / Objetivo do Exame
     let naturezaExame = '';
     const natMatch = text.match(/(?:Natureza\s*do\s*Exame|Objetivo\s*da\s*Per[ií]cia)\s*:\s*([^"”\n\r]+)/i)
                   || cleanSingleLine.match(/(?:natureza\s*de\s*exame\s*:\s*|exame\s*:\s*)["“]?([^"”\n\.]+)/i);
@@ -752,7 +786,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Natureza do Exame: ${naturezaExame}`);
     }
 
-    // 7. BUSCA DE LACRES (ex: LACRE 030220, lacre nº 030310)
+    // 7. BUSCA DE LACRES
     const lacresEncontrados = [];
     const lRegex1 = /(?:lacre|inv[oó]lucro)(?:[^\d\n\r]{0,35})?(\b\d{5,8}\b)/gi;
     let m1;
@@ -775,16 +809,36 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Lacre(s) Encontrado(s): ${lacresEncontrados.join(', ')}`);
     }
 
-    // 8. Data da Designação
-    const dataMatch = text.match(/(?:Em\s*)(\d{1,2}\s+de\s+[a-zç]+\s+de\s+\d{4})/i)
-                   || text.match(/(\d{1,2}\s+[A-Z]{3}\s+\d{4})/i);
-    if (dataMatch) {
-      laudoState.preambulo.dataDesignacao = dataMatch[1].trim();
-      inputDataDesignacao.value = dataMatch[1].trim();
-      detected.push(`Data Designação: ${dataMatch[1].trim()}`);
+    // 8. Data da Designação (Carimbo '27 AGO 2026', Extenso '27 de agosto de 2026' ou '27/08/2026')
+    let dataDesignacao = '';
+    const dataCarimboMatch = text.match(/\b(\d{1,2})\s+([A-Z]{3})\s+(\d{4})\b/i);
+    const dataExtensoMatch = text.match(/(\d{1,2}\s+de\s+[a-zç]+\s+de\s+\d{4})/i);
+    const dataNumericaMatch = text.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/);
+
+    if (dataCarimboMatch) {
+      const dia = dataCarimboMatch[1];
+      const mesAbbr = dataCarimboMatch[2].toUpperCase();
+      const ano = dataCarimboMatch[3];
+      const mesNome = mesesMap[mesAbbr] || mesAbbr.toLowerCase();
+      dataDesignacao = `${dia} de ${mesNome} de ${ano}`;
+    } else if (dataExtensoMatch) {
+      dataDesignacao = dataExtensoMatch[1].trim();
+    } else if (dataNumericaMatch) {
+      const dia = dataNumericaMatch[1];
+      const mesNum = parseInt(dataNumericaMatch[2]);
+      const ano = dataNumericaMatch[3];
+      const mesesArr = ['', 'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+      const mesNome = mesesArr[mesNum] || `${mesNum}`;
+      dataDesignacao = `${dia} de ${mesNome} de ${ano}`;
     }
 
-    // 9. AUTO-DETECÇÃO DE OBJETOS PERICIAIS (ex: iPhone 11, IMEI 355169423223126)
+    if (dataDesignacao) {
+      laudoState.preambulo.dataDesignacao = dataDesignacao;
+      inputDataDesignacao.value = dataDesignacao;
+      detected.push(`Data Designação: ${dataDesignacao}`);
+    }
+
+    // 9. AUTO-DETECÇÃO DE OBJETOS PERICIAIS
     const objetosDetectados = extractObjectsFromText(text);
     if (objetosDetectados.length > 0) {
       laudoState.objetos = objetosDetectados;
@@ -996,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (LENDO 100% O CONTEÚDO EDITÁVEL NA TELA SEM MISTURA DE VARIÁVEIS DE ESTADO)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (LENDO 100% O CONTEÚDO EDITÁVEL NA TELA)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
