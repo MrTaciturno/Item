@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Updated Mini Celular Compendio & Template Formatting
+// Main Application Script with Live Preview Content Export, Exact Considerações Finais & Extenso Page Count
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -40,6 +40,26 @@ document.addEventListener('DOMContentLoaded', () => {
     compendioData: null,
     selectedCategory: null
   };
+
+  // ==========================================
+  // HELPER NUMERAÇÃO POR EXTENSO
+  // ==========================================
+  function numeroParaExtenso(num) {
+    const n = parseInt(num) || 1;
+    const extensos = {
+      1: 'uma',
+      2: 'duas',
+      3: 'três',
+      4: 'quatro',
+      5: 'cinco',
+      6: 'seis',
+      7: 'sete',
+      8: 'oito',
+      9: 'nove',
+      10: 'dez'
+    };
+    return extensos[n] || `${n}`;
+  }
 
   // ==========================================
   // INICIALIZAÇÃO DE ELEMENTOS DO DOM
@@ -99,8 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnTriggerFotoUpload = document.getElementById('btn-trigger-foto-upload');
   const fotosGallery = document.getElementById('fotos-gallery');
 
-  // Download Button
+  // Download Button & Preview Content
   const btnExportDocx = document.getElementById('btn-export-docx');
+  const previewEditableContent = document.getElementById('preview-editable-content');
 
   // ==========================================
   // NAVEGAÇÃO DE ABAS
@@ -380,14 +401,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function buildFormattedDescription(template, campoValues) {
     let desc = template;
 
-    // Tratamento especial para IMEI2 se preenchido
     if (campoValues.imei2 && campoValues.imei2.trim() && campoValues.imei2.trim() !== '[Omitir]') {
       desc = desc.replace('{imei2}', ` e IMEI 2: ${campoValues.imei2.trim()}`);
     } else {
       desc = desc.replace('{imei2}', '');
     }
 
-    // Tratamento especial para SN se preenchido
     if (campoValues.sn && campoValues.sn.trim() && campoValues.sn.trim() !== '[Omitir]') {
       desc = desc.replace('{sn}', `, S/N: ${campoValues.sn.trim()}`);
     } else {
@@ -395,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     Object.keys(campoValues).forEach(key => {
-      if (key === 'imei2' || key === 'sn') return; // já tratados acima
+      if (key === 'imei2' || key === 'sn') return;
       const val = (campoValues[key] || '').trim();
 
       if (!val || val === '[Omitir]') {
@@ -570,7 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==========================================
-  // OCR & PARSER INTELIGENTE CORRIGIDO DE LACRES E OBJETOS
+  // OCR & PARSER INTELIGENTE CORRIGIDO
   // ==========================================
   btnParseText.addEventListener('click', () => {
     const text = ocrPastedText.value;
@@ -644,7 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const text = rawText.replace(/\s+/g, ' ');
     const detected = [];
 
-    // Protocolo (ex: P01412/26, P 0 1412/26)
+    // Protocolo
     const protocoloMatch = text.match(/(?:protocolo|protocolada|sob\s*n?º?\s*)\s*([P|p]\s*[\d\s\/]+)/i) || text.match(/\b(P\s*\d{4,5}\/\d{2})\b/i);
     if (protocoloMatch) {
       const cleanProtocolo = protocoloMatch[1].replace(/\s+/g, '');
@@ -653,7 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Protocolo: ${cleanProtocolo}`);
     }
 
-    // Número do Laudo (ex: 162836/2026)
+    // Número do Laudo
     const laudoMatch = text.match(/(?:laudo|laudo\s*n?º?\s*)\s*(\d{5,7}\s*\/\s*\d{4})/i);
     if (laudoMatch) {
       const cleanLaudo = laudoMatch[1].replace(/\s+/g, '');
@@ -662,7 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Nº Laudo: ${cleanLaudo}`);
     }
 
-    // BO (ex: EM7833-1/2026 ou BO Nº GS2889-1/2026)
+    // BO
     const boMatch = text.match(/(?:BO\s*N?º?\s*|boletim\s*n?º?\s*)([A-Z]{2}\d{4,6}-\d\/\d{4})/i) || text.match(/\b([A-Z]{2}\d{4,6}-\d\/\d{4})\b/i);
     if (boMatch) {
       laudoState.objetivo.boNum = boMatch[1].trim();
@@ -670,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`BO: ${boMatch[1].trim()}`);
     }
 
-    // Delegacia de Elaboração (CORRIGIDO: não engole "e Circunscrição")
+    // Delegacia de Elaboração
     const elabMatch = text.match(/Elabora[^\s:]*\s*:\s*([^;\)\n]+?)(?=\s*e\s*Circunscri|\s*Circunscri|\s*\)|$)/i)
                    || text.match(/(?:Del\.?\s*Pol\.?\s*[^;\)\n]+?)(?=\s*e\s*Circunscri|\s*Circunscri|\s*\)|$)/i);
     if (elabMatch) {
@@ -681,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Del. Elaboração: ${val}`);
     }
 
-    // Delegacia de Circunscrição (CORRIGIDO)
+    // Delegacia de Circunscrição
     const circMatch = text.match(/Circunscri[^\s:]*\s*:\s*([^;\)\n]+?)(?=\s*\)|$)/i);
     if (circMatch) {
       laudoState.objetivo.delCircunscricao = circMatch[1].trim();
@@ -697,7 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Natureza: ${naturezaMatch[1].trim()}`);
     }
 
-    // BUSCA DE LACRES (CORRIGIDA)
+    // BUSCA DE LACRES
     const lacresEncontrados = [];
     const lRegex1 = /(?:lacre|inv[oó]lucro)(?:[^\d\n]{0,35})?(\b\d{5,8}\b)/gi;
     let m1;
@@ -728,7 +747,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Data Designação: ${dataMatch[1].trim()}`);
     }
 
-    // AUTO-DETECÇÃO E CRIAÇÃO PRÉ-PREENCHIDA DE OBJETOS PERICIAIS (CORRIGIDA)
+    // AUTO-DETECÇÃO DE OBJETOS PERICIAIS
     const objetosDetectados = extractObjectsFromText(text);
     if (objetosDetectados.length > 0) {
       laudoState.objetos = objetosDetectados;
@@ -854,6 +873,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function calculateEstimatedTotalPages() {
+    // Estimativa da última página baseada na quantidade de fotos e texto
+    let numPages = 2; // Padrão laudo com 1-2 fotos
+    if (laudoState.fotos.length > 2 || laudoState.objetos.length > 3) {
+      numPages = Math.ceil(laudoState.fotos.length / 2) + 1;
+    }
+    return Math.max(2, numPages);
+  }
+
   function updatePreview() {
     document.getElementById('pv-data-designacao').innerText = laudoState.preambulo.dataDesignacao || '[Data]';
     document.getElementById('pv-protocolo').innerText = laudoState.preambulo.protocolo || '[Protocolo]';
@@ -916,6 +944,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    const totalPaginasEst = calculateEstimatedTotalPages();
+    document.getElementById('pv-total-paginas').innerText = totalPaginasEst;
+    document.getElementById('pv-total-paginas-extenso').innerText = numeroParaExtenso(totalPaginasEst);
+    document.getElementById('pv-footer-pagina').innerText = totalPaginasEst;
+
     document.getElementById('pv-lacre-saida').innerText = laudoState.fechamento.lacreSaida || '[Lacre Saída]';
     document.getElementById('pv-data-elaboracao').innerText = laudoState.fechamento.dataElaboracao || '[Local e Data]';
     document.getElementById('pv-nome-perito').innerHTML = `<strong>${laudoState.fechamento.nomePerito || '[Nome do Perito]'}</strong><br>Perito Criminal`;
@@ -926,7 +959,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (ARIAL 12, ESPAÇAMENTO 1.5, ALINHAMENTO JUSTIFICADO, RODAPÉ LEGAL DIMINUTO)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (LENDO DIRETAMENTE AS EDIÇÕES DA PRÉ-VISUALIZAÇÃO A4 DA TELA)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -949,201 +982,149 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const docParagraphs = [];
 
-      // 1. PREÂMBULO (Arial 12pt, Espaçamento 1.5, Justificado, Recuo 1ª Linha)
-      docParagraphs.push(
-        new Paragraph({
-          alignment: alignJustified,
-          indent: { firstLine: 709 }, // 1.25 cm
-          spacing: { line: 360, after: 200 }, // 1.5 espaçamento
-          children: [
-            new TextRun({ text: cleanString(`Em ${laudoState.preambulo.dataDesignacao}, no Núcleo de Perícias Criminalísticas de Americana, do Instituto de Criminalística, da Superintendência da Polícia Técnico-Científica, da Secretaria de Negócios de Segurança Pública do Estado de São Paulo, em conformidade com o disposto no Decreto-Lei n.º 3.689/41 combinado com os Decretos n.º 42.815/08 e n.º 42.847/08, o Diretor deste Instituto de Criminalística, designou o Perito Criminal signatário para proceder a este exame pericial, em atendimento à requisição protocolada sob n.º `), font: "Arial", size: 24 }),
-            new TextRun({ text: cleanString(laudoState.preambulo.protocolo), bold: true, font: "Arial", size: 24 }),
-            new TextRun({ text: `, laudo `, font: "Arial", size: 24 }),
-            new TextRun({ text: cleanString(laudoState.preambulo.laudoNum), bold: true, font: "Arial", size: 24 }),
-            new TextRun({ text: `.`, font: "Arial", size: 24 })
-          ]
-        })
-      );
+      // VARRER TODOS OS ELEMENTOS FILHOS DE #preview-editable-content (GARANTE EXPORTAÇÃO EXATA DO QUE O USUÁRIO EDITOU NA TELA)
+      const previewChildren = Array.from(previewEditableContent.children);
 
-      // 2. OBJETIVO
-      docParagraphs.push(
-        new Paragraph({
-          alignment: AlignmentType.LEFT,
-          spacing: { before: 300, after: 150 },
-          children: [new TextRun({ text: "1. OBJETIVO", bold: true, font: "Arial", size: 24 })]
-        }),
-        new Paragraph({
-          alignment: alignJustified,
-          indent: { firstLine: 709 },
-          spacing: { line: 360, after: 150 },
-          children: [
-            new TextRun({ text: cleanString(`O objetivo deste exame pericial é atender a requisição relacionada ao BO Nº ${laudoState.objetivo.boNum} (Elaboração: ${laudoState.objetivo.delElaboracao} e Circunscrição: ${laudoState.objetivo.delCircunscricao}), tendo como natureza de exame: "${laudoState.objetivo.naturezaExame}".`), font: "Arial", size: 24 })
-          ]
-        })
-      );
+      for (const node of previewChildren) {
+        const tagName = node.tagName.toUpperCase();
 
-      const lacresResumoDocx = laudoState.lacres.length === 1 
-        ? `invólucro plástico de lacre nº ${laudoState.lacres[0].numero}`
-        : `invólucros plásticos de lacres nº ${laudoState.lacres.map(l => l.numero).join(', ')}`;
+        // 1. TÍTULOS DE CAPÍTULOS (H3)
+        if (tagName === 'H3') {
+          docParagraphs.push(
+            new Paragraph({
+              alignment: AlignmentType.LEFT,
+              spacing: { before: 300, after: 150 },
+              children: [new TextRun({ text: cleanString(node.innerText), bold: true, font: "Arial", size: 24 })]
+            })
+          );
+        }
+        // 2. PARÁGRAFOS DE TEXTO (P) OU SUBTÍTULOS DE LACRE
+        else if (tagName === 'P') {
+          const textContent = cleanString(node.innerText);
+          if (!textContent) continue;
 
-      docParagraphs.push(
-        new Paragraph({
-          alignment: alignJustified,
-          indent: { firstLine: 709 },
-          spacing: { line: 360, after: 250 },
-          children: [
-            new TextRun({ text: cleanString(`O(s) objeto(s) descrito(s) estava(m) acondicionado(s) em ${lacresResumoDocx}.`), font: "Arial", size: 24 })
-          ]
-        })
-      );
-
-      // 3. DO OBJETO E DOS EXAMES
-      docParagraphs.push(
-        new Paragraph({
-          alignment: AlignmentType.LEFT,
-          spacing: { before: 300, after: 150 },
-          children: [new TextRun({ text: "2. DO(S) OBJETO(S) E DOS EXAMES", bold: true, font: "Arial", size: 24 })]
-        })
-      );
-
-      if (laudoState.objetos.length === 0) {
-        docParagraphs.push(
-          new Paragraph({
-            alignment: alignJustified,
-            indent: { firstLine: 709 },
-            spacing: { line: 360, after: 200 },
-            children: [new TextRun({ text: "[Nenhum objeto cadastrado]", italic: true, font: "Arial", size: 24 })]
-          })
-        );
-      } else {
-        if (laudoState.lacres.length <= 1) {
-          laudoState.objetos.forEach(obj => {
+          // Verificar se é o parágrafo das Considerações Finais
+          if (textContent.includes('páginas, incluindo capa') || textContent.includes('gravado no Sistema Gestor')) {
+            docParagraphs.push(
+              new Paragraph({
+                alignment: alignJustified,
+                indent: { firstLine: 709 },
+                spacing: { line: 360, after: 250 },
+                children: [
+                  new TextRun({ text: cleanString(`O(s) objetos(s) descrito(s) segue(m) em ${laudoState.fechamento.lacreSaida} anexo a este laudo pericial que possui `), font: "Arial", size: 24 }),
+                  new TextRun({ children: [PageNumber.TOTAL_PAGES], font: "Arial", size: 24 }),
+                  new TextRun({ text: ` (`, font: "Arial", size: 24 }),
+                  new TextRun({ children: [PageNumber.TOTAL_PAGES], font: "Arial", size: 24 }),
+                  new TextRun({ text: cleanString(`) páginas, incluindo capa, ficando assinado digitalmente nos termos da MP nº2200-2/2001 de 24/08/2001, e gravado no Sistema Gestor de Documentos e Laudos da Superintendência da Polícia Técnico-Científica do Estado de São Paulo.`), font: "Arial", size: 24 })
+                ]
+              })
+            );
+          } else if (node.classList.contains('document-sublacre')) {
+            docParagraphs.push(
+              new Paragraph({
+                alignment: alignJustified,
+                indent: { firstLine: 709 },
+                spacing: { line: 360, before: 150, after: 100 },
+                children: [new TextRun({ text: textContent, bold: true, font: "Arial", size: 24 })]
+              })
+            );
+          } else if (node.classList.contains('text-right')) {
+            docParagraphs.push(
+              new Paragraph({
+                alignment: AlignmentType.RIGHT,
+                spacing: { before: 200, after: 200 },
+                children: [new TextRun({ text: textContent, font: "Arial", size: 24 })]
+              })
+            );
+          } else {
+            // Parágrafo padrão (Preâmbulo, Objetivo, Descrição de Objeto)
             docParagraphs.push(
               new Paragraph({
                 alignment: alignJustified,
                 indent: { firstLine: 709 },
                 spacing: { line: 360, after: 200 },
-                children: [new TextRun({ text: cleanString(obj.descricaoFormatada), font: "Arial", size: 24 })]
+                children: [new TextRun({ text: textContent, font: "Arial", size: 24 })]
+              })
+            );
+          }
+        }
+        // 3. CONTAINER DE OBJETOS OU FOTOS
+        else if (node.id === 'pv-objetos-container') {
+          const objParas = Array.from(node.querySelectorAll('p'));
+          objParas.forEach(pEl => {
+            const pText = cleanString(pEl.innerText);
+            if (!pText) return;
+            const isSub = pEl.classList.contains('document-sublacre');
+            docParagraphs.push(
+              new Paragraph({
+                alignment: alignJustified,
+                indent: { firstLine: 709 },
+                spacing: { line: 360, after: 200, before: isSub ? 150 : 0 },
+                children: [new TextRun({ text: pText, bold: isSub, font: "Arial", size: 24 })]
               })
             );
           });
-        } else {
-          laudoState.lacres.forEach(lacre => {
-            const objetosDoLacre = laudoState.objetos.filter(o => o.lacreId === lacre.id);
-            if (objetosDoLacre.length > 0) {
+        }
+        // 4. CONTAINER DE FOTOS (LEVANTAMENTO FOTOGRÁFICO)
+        else if (node.id === 'pv-fotos-container' || node.classList.contains('preview-fotos-layout')) {
+          for (const foto of laudoState.fotos) {
+            try {
+              const base64Data = foto.src.split(',')[1];
+              const binaryString = atob(base64Data);
+              const len = binaryString.length;
+              const bytes = new Uint8Array(len);
+              for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+
+              const img = new Image();
+              img.src = foto.src;
+              await new Promise(r => img.onload = r);
+
+              const targetHeight = 302; // 8cm
+              const aspectRatio = img.width / img.height;
+              const targetWidth = Math.round(targetHeight * aspectRatio);
+
               docParagraphs.push(
                 new Paragraph({
-                  alignment: alignJustified,
-                  indent: { firstLine: 709 },
-                  spacing: { line: 360, before: 150, after: 100 },
+                  alignment: AlignmentType.CENTER,
+                  spacing: { before: 150, after: 50 },
                   children: [
-                    new TextRun({ text: cleanString(`${lacre.letra}. Objeto(s) acondicionado(s) no invólucro plástico de lacre nº ${lacre.numero}:`), bold: true, font: "Arial", size: 24 })
+                    new ImageRun({
+                      data: bytes,
+                      transformation: { width: targetWidth, height: targetHeight }
+                    })
                   ]
+                }),
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  spacing: { before: 50, after: 200 },
+                  children: [new TextRun({ text: cleanString(foto.legendaText), italic: true, font: "Arial", size: 24 })]
                 })
               );
-
-              objetosDoLacre.forEach(obj => {
-                docParagraphs.push(
-                  new Paragraph({
-                    alignment: alignJustified,
-                    indent: { firstLine: 709 },
-                    spacing: { line: 360, after: 200 },
-                    children: [new TextRun({ text: cleanString(obj.descricaoFormatada), font: "Arial", size: 24 })]
-                  })
-                );
-              });
+            } catch (imgErr) {
+              console.error('Erro ao processar foto:', imgErr);
             }
+          }
+        }
+        // 5. BLOCO DE ASSINATURA À DIREITA
+        else if (node.classList.contains('signature-block-right')) {
+          const sigParas = Array.from(node.querySelectorAll('p'));
+          sigParas.forEach(sigP => {
+            const sigText = cleanString(sigP.innerText);
+            if (!sigText) return;
+            docParagraphs.push(
+              new Paragraph({
+                alignment: AlignmentType.RIGHT,
+                spacing: { before: 100, after: 50 },
+                children: [new TextRun({ text: sigText, bold: sigP.querySelector('strong') ? true : false, font: "Arial", size: 24 })]
+              })
+            );
           });
         }
       }
 
-      // 4. LEVANTAMENTO FOTOGRÁFICO
-      docParagraphs.push(
-        new Paragraph({
-          alignment: AlignmentType.LEFT,
-          spacing: { before: 300, after: 150 },
-          children: [new TextRun({ text: "3. LEVANTAMENTO FOTOGRÁFICO", bold: true, font: "Arial", size: 24 })]
-        })
-      );
-
-      for (const foto of laudoState.fotos) {
-        try {
-          const base64Data = foto.src.split(',')[1];
-          const binaryString = atob(base64Data);
-          const len = binaryString.length;
-          const bytes = new Uint8Array(len);
-          for (let i = 0; i < len; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-          }
-
-          const img = new Image();
-          img.src = foto.src;
-          await new Promise(r => img.onload = r);
-
-          const targetHeight = 302; // 8cm
-          const aspectRatio = img.width / img.height;
-          const targetWidth = Math.round(targetHeight * aspectRatio);
-
-          docParagraphs.push(
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
-              spacing: { before: 150, after: 50 },
-              children: [
-                new ImageRun({
-                  data: bytes,
-                  transformation: { width: targetWidth, height: targetHeight }
-                })
-              ]
-            }),
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
-              spacing: { before: 50, after: 200 },
-              children: [new TextRun({ text: cleanString(foto.legendaText), italic: true, font: "Arial", size: 24 })]
-            })
-          );
-        } catch (imgErr) {
-          console.error('Erro ao adicionar foto no docx:', imgErr);
-        }
-      }
-
-      // 5. DAS CONSIDERAÇÕES FINAIS (INCLUINDO O TOTAL DE PÁGINAS)
-      docParagraphs.push(
-        new Paragraph({
-          alignment: AlignmentType.LEFT,
-          spacing: { before: 300, after: 150 },
-          children: [new TextRun({ text: "4. DAS CONSIDERAÇÕES FINAIS", bold: true, font: "Arial", size: 24 })]
-        }),
-        new Paragraph({
-          alignment: alignJustified,
-          indent: { firstLine: 709 },
-          spacing: { line: 360, after: 250 },
-          children: [
-            new TextRun({ text: cleanString(`O(s) objetos(s) descrito(s) segue(m) em ${laudoState.fechamento.lacreSaida} anexo a este laudo pericial que possui `), font: "Arial", size: 24 }),
-            new TextRun({ children: [PageNumber.TOTAL_PAGES], font: "Arial", size: 24 }),
-            new TextRun({ text: cleanString(` página(s), incluindo capa, ficando assinado digitalmente nos termos da MP nº2200-2/2001 de 24/08/2001.`), font: "Arial", size: 24 })
-          ]
-        })
-      );
-
-      // Cidade/Data e Assinatura Alinhadas à DIREITA
-      docParagraphs.push(
-        new Paragraph({
-          alignment: AlignmentType.RIGHT,
-          spacing: { before: 400, after: 400 },
-          children: [new TextRun({ text: cleanString(laudoState.fechamento.dataElaboracao), font: "Arial", size: 24 })]
-        }),
-        new Paragraph({
-          alignment: AlignmentType.RIGHT,
-          spacing: { before: 100, after: 50 },
-          children: [new TextRun({ text: cleanString(laudoState.fechamento.nomePerito), bold: true, font: "Arial", size: 24 })]
-        }),
-        new Paragraph({
-          alignment: AlignmentType.RIGHT,
-          children: [new TextRun({ text: "Perito Criminal", font: "Arial", size: 22 })]
-        })
-      );
-
-      // TABELA DE RODAPÉ COM NOTA LEGAL EM LETRA DIMINUTA E PÁGINA (SEM NÚMERO DE LAUDO)
+      // TABELA DE RODAPÉ COM NOTA LEGAL EM LETRA DIMINUTA E PÁGINA
       const legalFooterText = "Esta folha é propriedade da Superintendência da Polícia Técnico-Científica e seu conteúdo não pode ser copiado ou revelado a terceiros sem autorização expressa";
       const footerTable = new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
