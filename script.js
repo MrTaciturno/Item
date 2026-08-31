@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Live Preview Content Export, Exact Considerações Finais & Extenso Page Count
+// Main Application Script with 100% Pure Live Preview DOM Export & Static Calculated Page Count
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnTriggerFotoUpload = document.getElementById('btn-trigger-foto-upload');
   const fotosGallery = document.getElementById('fotos-gallery');
 
-  // Download Button & Preview Content
+  // Download Button & Editable Content Pane
   const btnExportDocx = document.getElementById('btn-export-docx');
   const previewEditableContent = document.getElementById('preview-editable-content');
 
@@ -873,9 +873,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function calculateEstimatedTotalPages() {
-    // Estimativa da última página baseada na quantidade de fotos e texto
-    let numPages = 2; // Padrão laudo com 1-2 fotos
+  function calculateTotalPagesCalculated() {
+    let numPages = 2;
     if (laudoState.fotos.length > 2 || laudoState.objetos.length > 3) {
       numPages = Math.ceil(laudoState.fotos.length / 2) + 1;
     }
@@ -944,10 +943,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    const totalPaginasEst = calculateEstimatedTotalPages();
-    document.getElementById('pv-total-paginas').innerText = totalPaginasEst;
-    document.getElementById('pv-total-paginas-extenso').innerText = numeroParaExtenso(totalPaginasEst);
-    document.getElementById('pv-footer-pagina').innerText = totalPaginasEst;
+    const totalPaginasCalculado = calculateTotalPagesCalculated();
+    document.getElementById('pv-total-paginas').innerText = totalPaginasCalculado;
+    document.getElementById('pv-total-paginas-extenso').innerText = numeroParaExtenso(totalPaginasCalculado);
+    document.getElementById('pv-footer-pagina').innerText = totalPaginasCalculado;
 
     document.getElementById('pv-lacre-saida').innerText = laudoState.fechamento.lacreSaida || '[Lacre Saída]';
     document.getElementById('pv-data-elaboracao').innerText = laudoState.fechamento.dataElaboracao || '[Local e Data]';
@@ -959,7 +958,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (LENDO DIRETAMENTE AS EDIÇÕES DA PRÉ-VISUALIZAÇÃO A4 DA TELA)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (LENDO 100% O CONTEÚDO EDITÁVEL NA TELA SEM MISTURA DE VARIÁVEIS DE ESTADO)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -981,150 +980,98 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const docParagraphs = [];
+      const totalPaginasEfetivo = calculateTotalPagesCalculated();
 
-      // VARRER TODOS OS ELEMENTOS FILHOS DE #preview-editable-content (GARANTE EXPORTAÇÃO EXATA DO QUE O USUÁRIO EDITOU NA TELA)
-      const previewChildren = Array.from(previewEditableContent.children);
+      // PARSE 100% PURO DO CONTEÚDO DO CONTAINER EDITÁVEL DA TELA
+      function processElementTree(node) {
+        const children = Array.from(node.children);
 
-      for (const node of previewChildren) {
-        const tagName = node.tagName.toUpperCase();
+        children.forEach(child => {
+          const tagName = child.tagName.toUpperCase();
 
-        // 1. TÍTULOS DE CAPÍTULOS (H3)
-        if (tagName === 'H3') {
-          docParagraphs.push(
-            new Paragraph({
-              alignment: AlignmentType.LEFT,
-              spacing: { before: 300, after: 150 },
-              children: [new TextRun({ text: cleanString(node.innerText), bold: true, font: "Arial", size: 24 })]
-            })
-          );
-        }
-        // 2. PARÁGRAFOS DE TEXTO (P) OU SUBTÍTULOS DE LACRE
-        else if (tagName === 'P') {
-          const textContent = cleanString(node.innerText);
-          if (!textContent) continue;
+          // 1. TÍTULOS (H3)
+          if (tagName === 'H3') {
+            const hText = cleanString(child.innerText);
+            if (hText) {
+              docParagraphs.push(
+                new Paragraph({
+                  alignment: AlignmentType.LEFT,
+                  spacing: { before: 300, after: 150 },
+                  children: [new TextRun({ text: hText, bold: true, font: "Arial", size: 24 })]
+                })
+              );
+            }
+          }
+          // 2. PARÁGRAFOS DE TEXTO (P)
+          else if (tagName === 'P') {
+            const pText = cleanString(child.innerText);
+            if (!pText) return;
 
-          // Verificar se é o parágrafo das Considerações Finais
-          if (textContent.includes('páginas, incluindo capa') || textContent.includes('gravado no Sistema Gestor')) {
+            const isRight = child.classList.contains('text-right');
+            const isSublacre = child.classList.contains('document-sublacre');
+
             docParagraphs.push(
               new Paragraph({
-                alignment: alignJustified,
-                indent: { firstLine: 709 },
-                spacing: { line: 360, after: 250 },
+                alignment: isRight ? AlignmentType.RIGHT : alignJustified,
+                indent: isRight ? undefined : { firstLine: 709 },
+                spacing: { line: 360, after: isRight ? 100 : 200 },
                 children: [
-                  new TextRun({ text: cleanString(`O(s) objetos(s) descrito(s) segue(m) em ${laudoState.fechamento.lacreSaida} anexo a este laudo pericial que possui `), font: "Arial", size: 24 }),
-                  new TextRun({ children: [PageNumber.TOTAL_PAGES], font: "Arial", size: 24 }),
-                  new TextRun({ text: ` (`, font: "Arial", size: 24 }),
-                  new TextRun({ children: [PageNumber.TOTAL_PAGES], font: "Arial", size: 24 }),
-                  new TextRun({ text: cleanString(`) páginas, incluindo capa, ficando assinado digitalmente nos termos da MP nº2200-2/2001 de 24/08/2001, e gravado no Sistema Gestor de Documentos e Laudos da Superintendência da Polícia Técnico-Científica do Estado de São Paulo.`), font: "Arial", size: 24 })
+                  new TextRun({ text: pText, bold: isSublacre, font: "Arial", size: 24 })
                 ]
               })
             );
-          } else if (node.classList.contains('document-sublacre')) {
-            docParagraphs.push(
-              new Paragraph({
-                alignment: alignJustified,
-                indent: { firstLine: 709 },
-                spacing: { line: 360, before: 150, after: 100 },
-                children: [new TextRun({ text: textContent, bold: true, font: "Arial", size: 24 })]
-              })
-            );
-          } else if (node.classList.contains('text-right')) {
-            docParagraphs.push(
-              new Paragraph({
-                alignment: AlignmentType.RIGHT,
-                spacing: { before: 200, after: 200 },
-                children: [new TextRun({ text: textContent, font: "Arial", size: 24 })]
-              })
-            );
-          } else {
-            // Parágrafo padrão (Preâmbulo, Objetivo, Descrição de Objeto)
-            docParagraphs.push(
-              new Paragraph({
-                alignment: alignJustified,
-                indent: { firstLine: 709 },
-                spacing: { line: 360, after: 200 },
-                children: [new TextRun({ text: textContent, font: "Arial", size: 24 })]
-              })
-            );
           }
-        }
-        // 3. CONTAINER DE OBJETOS OU FOTOS
-        else if (node.id === 'pv-objetos-container') {
-          const objParas = Array.from(node.querySelectorAll('p'));
-          objParas.forEach(pEl => {
-            const pText = cleanString(pEl.innerText);
-            if (!pText) return;
-            const isSub = pEl.classList.contains('document-sublacre');
-            docParagraphs.push(
-              new Paragraph({
-                alignment: alignJustified,
-                indent: { firstLine: 709 },
-                spacing: { line: 360, after: 200, before: isSub ? 150 : 0 },
-                children: [new TextRun({ text: pText, bold: isSub, font: "Arial", size: 24 })]
-              })
-            );
-          });
-        }
-        // 4. CONTAINER DE FOTOS (LEVANTAMENTO FOTOGRÁFICO)
-        else if (node.id === 'pv-fotos-container' || node.classList.contains('preview-fotos-layout')) {
-          for (const foto of laudoState.fotos) {
-            try {
-              const base64Data = foto.src.split(',')[1];
-              const binaryString = atob(base64Data);
-              const len = binaryString.length;
-              const bytes = new Uint8Array(len);
-              for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
+          // 3. CONTAINER DE FOTOS (LEVANTAMENTO FOTOGRÁFICO)
+          else if (child.id === 'pv-fotos-container' || child.classList.contains('preview-fotos-layout')) {
+            for (const foto of laudoState.fotos) {
+              try {
+                const base64Data = foto.src.split(',')[1];
+                const binaryString = atob(base64Data);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                  bytes[i] = binaryString.charCodeAt(i);
+                }
+
+                const img = new Image();
+                img.src = foto.src;
+
+                const targetHeight = 302; // 8cm
+                const aspectRatio = (img.width && img.height) ? (img.width / img.height) : 1.33;
+                const targetWidth = Math.round(targetHeight * aspectRatio);
+
+                docParagraphs.push(
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    spacing: { before: 150, after: 50 },
+                    children: [
+                      new ImageRun({
+                        data: bytes,
+                        transformation: { width: targetWidth, height: targetHeight }
+                      })
+                    ]
+                  }),
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    spacing: { before: 50, after: 200 },
+                    children: [new TextRun({ text: cleanString(foto.legendaText), italic: true, font: "Arial", size: 24 })]
+                  })
+                );
+              } catch (imgErr) {
+                console.error('Erro ao processar foto no docx:', imgErr);
               }
-
-              const img = new Image();
-              img.src = foto.src;
-              await new Promise(r => img.onload = r);
-
-              const targetHeight = 302; // 8cm
-              const aspectRatio = img.width / img.height;
-              const targetWidth = Math.round(targetHeight * aspectRatio);
-
-              docParagraphs.push(
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  spacing: { before: 150, after: 50 },
-                  children: [
-                    new ImageRun({
-                      data: bytes,
-                      transformation: { width: targetWidth, height: targetHeight }
-                    })
-                  ]
-                }),
-                new Paragraph({
-                  alignment: AlignmentType.CENTER,
-                  spacing: { before: 50, after: 200 },
-                  children: [new TextRun({ text: cleanString(foto.legendaText), italic: true, font: "Arial", size: 24 })]
-                })
-              );
-            } catch (imgErr) {
-              console.error('Erro ao processar foto:', imgErr);
             }
           }
-        }
-        // 5. BLOCO DE ASSINATURA À DIREITA
-        else if (node.classList.contains('signature-block-right')) {
-          const sigParas = Array.from(node.querySelectorAll('p'));
-          sigParas.forEach(sigP => {
-            const sigText = cleanString(sigP.innerText);
-            if (!sigText) return;
-            docParagraphs.push(
-              new Paragraph({
-                alignment: AlignmentType.RIGHT,
-                spacing: { before: 100, after: 50 },
-                children: [new TextRun({ text: sigText, bold: sigP.querySelector('strong') ? true : false, font: "Arial", size: 24 })]
-              })
-            );
-          });
-        }
+          // 4. CONTAINER DE OBJETOS OU ASSINATURA -> RECURSIVO PARA CAPTURAR PARÁGRAFOS INTERNOS EXATOS
+          else if (child.id === 'pv-objetos-container' || child.classList.contains('signature-block-right') || child.tagName === 'DIV') {
+            processElementTree(child);
+          }
+        });
       }
 
-      // TABELA DE RODAPÉ COM NOTA LEGAL EM LETRA DIMINUTA E PÁGINA
+      processElementTree(previewEditableContent);
+
+      // TABELA DE RODAPÉ COM NOTA LEGAL EM LETRA DIMINUTA E NÚMERO DE PÁGINA (ESTÁTICO / WORD NATIVO)
       const legalFooterText = "Esta folha é propriedade da Superintendência da Polícia Técnico-Científica e seu conteúdo não pode ser copiado ou revelado a terceiros sem autorização expressa";
       const footerTable = new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
