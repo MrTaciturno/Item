@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Trailing Comma after Date & Explicit Line Feed after Perito Name
+// Main Application Script with Dynamic Access Date, Custom Model Defaults, and DOCX Yellow Highlights
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -12,30 +12,61 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
+  // HELPER DATA DE HOJE POR EXTENSO
+  // ==========================================
+  function getTodayExtenso() {
+    const now = new Date();
+    const dia = String(now.getDate()).padStart(2, '0');
+    const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+    const mes = meses[now.getMonth()];
+    const ano = now.getFullYear();
+    return `${dia} de ${mes} de ${ano}`;
+  }
+
+  const currentYear = new Date().getFullYear();
+  const todayExtenso = getTodayExtenso();
+
+  // ==========================================
+  // VALORES PADRÃO (DEFAULTS DO MODELO DE LAUDO)
+  // ==========================================
+  const DEFAULTS = {
+    dataDesignacao: todayExtenso,
+    protocolo: 'P00000/26',
+    laudoNum: `000000/${currentYear}`,
+    boNum: 'AA0000-1/2026',
+    delElaboracao: 'Del. Pol. Elaboração',
+    delCircunscricao: 'Del. Pol. Circunscrição',
+    naturezaExame: 'Descrição e fotografação',
+    lacreNumero: '000000',
+    dataElaboracao: `Americana, ${todayExtenso}`,
+    lacreSaida: 'invólucro plástico (de lacre informado na capa deste laudo)',
+    nomePerito: 'Perito Criminal Signatário'
+  };
+
+  // ==========================================
   // ESTADO GLOBAL DA APLICAÇÃO (LAUDO STATE)
   // ==========================================
-  const currentYear = new Date().getFullYear();
   const laudoState = {
     preambulo: {
-      dataDesignacao: `29 de agosto de ${currentYear}`,
-      protocolo: 'P01412/26',
-      laudoNum: `162836/${currentYear}`
+      dataDesignacao: DEFAULTS.dataDesignacao,
+      protocolo: DEFAULTS.protocolo,
+      laudoNum: DEFAULTS.laudoNum
     },
     objetivo: {
-      boNum: 'EM7833-1/2026',
-      delElaboracao: 'Del. Pol. Monte Mor',
-      delCircunscricao: '1DP Hortolândia',
-      naturezaExame: 'Constatar funcionalidade'
+      boNum: DEFAULTS.boNum,
+      delElaboracao: DEFAULTS.delElaboracao,
+      delCircunscricao: DEFAULTS.delCircunscricao,
+      naturezaExame: DEFAULTS.naturezaExame
     },
     lacres: [
-      { id: 1, letra: 'a', numero: '030310' }
+      { id: 1, letra: 'a', numero: DEFAULTS.lacreNumero }
     ],
     objetos: [],
     fotos: [],
     fechamento: {
-      lacreSaida: 'invólucro plástico (de lacre informado na capa deste laudo)',
-      dataElaboracao: `Americana, 29 de agosto de ${currentYear}`,
-      nomePerito: 'Perito Criminal Signatário',
+      lacreSaida: DEFAULTS.lacreSaida,
+      dataElaboracao: DEFAULTS.dataElaboracao,
+      nomePerito: DEFAULTS.nomePerito,
       textoCustom: ''
     },
     compendioData: null,
@@ -311,10 +342,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     laudoState.lacres.forEach((lacre, idx) => {
       lacre.letra = letras[idx] || `${idx + 1}`;
+      const isDefault = (lacre.numero === DEFAULTS.lacreNumero);
       const tag = document.createElement('div');
       tag.className = 'lacre-tag';
       tag.innerHTML = `
-        <span><strong>${laudoState.lacres.length > 1 ? `${lacre.letra}. ` : ''}</strong>Lacre nº ${lacre.numero}</span>
+        <span><strong>${laudoState.lacres.length > 1 ? `${lacre.letra}. ` : ''}</strong>Lacre nº <span class="${isDefault ? 'pv-field' : ''}">${lacre.numero}</span></span>
         ${laudoState.lacres.length > 1 ? `<span class="remove-btn" onclick="removerLacre(${lacre.id})">×</span>` : ''}
       `;
       lacresContainer.appendChild(tag);
@@ -809,13 +841,10 @@ document.addEventListener('DOMContentLoaded', () => {
           laudoNum = `${numPart}/20${yearPart}`;
         }
       }
+      laudoState.preambulo.laudoNum = laudoNum;
+      inputLaudoNum.value = laudoNum;
       detected.push(`Nº Laudo Detectado: ${laudoNum}`);
-    } else {
-      laudoNum = `000000/${currentYear}`;
-      detected.push(`Nº Laudo Padrão: ${laudoNum}`);
     }
-    laudoState.preambulo.laudoNum = laudoNum;
-    inputLaudoNum.value = laudoNum;
 
     // 3. BO
     const boMatch = text.match(/(?:BO\s*N?[º°]?\s*:?\s*|boletim\s*n?[º°]?\s*:?\s*)([A-Z]{2}\d{4,6}-\d\/\d{4})/i) 
@@ -1050,20 +1079,28 @@ document.addEventListener('DOMContentLoaded', () => {
     return Math.max(2, numPages);
   }
 
-  function updatePreview() {
-    document.getElementById('pv-data-designacao').innerText = laudoState.preambulo.dataDesignacao || '[Data]';
-    document.getElementById('pv-protocolo').innerText = laudoState.preambulo.protocolo || '[Protocolo]';
-    document.getElementById('pv-laudo-num').innerText = laudoState.preambulo.laudoNum || '[Laudo]';
+  function formatSpanField(id, text, defaultVal) {
+    const cleanVal = (text || '').trim();
+    const cleanDef = (defaultVal || '').trim();
+    const isDefault = !cleanVal || cleanVal === cleanDef;
+    const displayVal = cleanVal || cleanDef;
+    return `<span id="${id}" class="${isDefault ? 'pv-field' : ''}">${displayVal}</span>`;
+  }
 
-    document.getElementById('pv-bo-num').innerText = laudoState.objetivo.boNum || '[BO]';
-    document.getElementById('pv-del-elaboracao').innerText = laudoState.objetivo.delElaboracao || '[Del. Elaboração]';
-    document.getElementById('pv-del-circunscricao').innerText = laudoState.objetivo.delCircunscricao || '[Del. Circunscrição]';
-    document.getElementById('pv-natureza-exame').innerText = laudoState.objetivo.naturezaExame || '[Natureza]';
+  function updatePreview() {
+    document.getElementById('pv-data-designacao').innerHTML = formatSpanField('pv-data-designacao', laudoState.preambulo.dataDesignacao, DEFAULTS.dataDesignacao);
+    document.getElementById('pv-protocolo').innerHTML = formatSpanField('pv-protocolo', laudoState.preambulo.protocolo, DEFAULTS.protocolo);
+    document.getElementById('pv-laudo-num').innerHTML = formatSpanField('pv-laudo-num', laudoState.preambulo.laudoNum, DEFAULTS.laudoNum);
+
+    document.getElementById('pv-bo-num').innerHTML = formatSpanField('pv-bo-num', laudoState.objetivo.boNum, DEFAULTS.boNum);
+    document.getElementById('pv-del-elaboracao').innerHTML = formatSpanField('pv-del-elaboracao', laudoState.objetivo.delElaboracao, DEFAULTS.delElaboracao);
+    document.getElementById('pv-del-circunscricao').innerHTML = formatSpanField('pv-del-circunscricao', laudoState.objetivo.delCircunscricao, DEFAULTS.delCircunscricao);
+    document.getElementById('pv-natureza-exame').innerHTML = formatSpanField('pv-natureza-exame', laudoState.objetivo.naturezaExame, DEFAULTS.naturezaExame);
 
     const lacresResumoText = laudoState.lacres.length === 1 
-      ? `invólucro plástico de lacre nº ${laudoState.lacres[0].numero}`
-      : `invólucros plásticos de lacres nº ${laudoState.lacres.map(l => l.numero).join(', ')}`;
-    document.getElementById('pv-lacres-resumo').innerHTML = `O(s) objeto(s) descrito(s) estava(m) acondicionado(s) em <span class="pv-field">${lacresResumoText}</span>.`;
+      ? `invólucro plástico de lacre nº ${formatSpanField('pv-lacre-' + laudoState.lacres[0].id, laudoState.lacres[0].numero, DEFAULTS.lacreNumero)}`
+      : `invólucros plásticos de lacres nº ${laudoState.lacres.map(l => formatSpanField('pv-lacre-' + l.id, l.numero, DEFAULTS.lacreNumero)).join(', ')}`;
+    document.getElementById('pv-lacres-resumo').innerHTML = `O(s) objeto(s) descrito(s) estava(m) acondicionado(s) em ${lacresResumoText}.`;
 
     const pvObjetosContainer = document.getElementById('pv-objetos-container');
     pvObjetosContainer.innerHTML = '';
@@ -1117,20 +1154,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('pv-total-paginas-extenso').innerText = numeroParaExtenso(totalPaginasCalculado);
     document.getElementById('pv-footer-pagina').innerText = 2;
 
-    document.getElementById('pv-lacre-saida').innerText = laudoState.fechamento.lacreSaida || '[Lacre Saída]';
+    document.getElementById('pv-lacre-saida').innerText = laudoState.fechamento.lacreSaida || DEFAULTS.lacreSaida;
     
     // CIDADE E DATA COM VÍRGULA NO FINAL
-    let dataElabText = laudoState.fechamento.dataElaboracao || '[Local e Data]';
+    let dataElabText = laudoState.fechamento.dataElaboracao || DEFAULTS.dataElaboracao;
     dataElabText = dataElabText.trim();
     if (dataElabText && !dataElabText.endsWith(',')) {
       dataElabText += ',';
     }
-    document.getElementById('pv-data-elaboracao').innerText = dataElabText;
+    document.getElementById('pv-data-elaboracao').innerHTML = formatSpanField('pv-data-elab-span', dataElabText, DEFAULTS.dataElaboracao + ',');
 
     // NOME E CARGO EM PARÁGRAFOS SEPARADOS
     const elNomePerito = document.getElementById('pv-nome-perito-nome');
     if (elNomePerito) {
-      elNomePerito.innerHTML = `<strong>${laudoState.fechamento.nomePerito || '[Nome do Perito]'}</strong>`;
+      elNomePerito.innerHTML = `<strong>${laudoState.fechamento.nomePerito || DEFAULTS.nomePerito}</strong>`;
     }
     const elCargoPerito = document.getElementById('pv-nome-perito-cargo');
     if (elCargoPerito) {
@@ -1143,7 +1180,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (COM PRESERVAÇÃO DE VÍRGULA E QUEBRAS DE LINHA SEPARADAS)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (COM DESTAQUE AMARELO PARA CAMPOS PADRÃO / PENDENTES)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -1195,25 +1232,60 @@ document.addEventListener('DOMContentLoaded', () => {
           else if (tagName === 'P') {
             const isRight = child.classList.contains('text-right');
             const isSublacre = child.classList.contains('document-sublacre');
-            const isBold = child.querySelector('strong') !== null || isSublacre;
+            const isPBold = child.querySelector('strong') !== null || isSublacre;
 
             // Preservar quebras de linha explícitas (ex: \n ou <br>)
             const rawLines = child.innerText.split(/\r?\n/);
 
             rawLines.forEach(rawLine => {
-              const lineText = cleanString(rawLine);
-              if (!lineText) return;
+              if (!cleanString(rawLine)) return;
 
-              docParagraphs.push(
-                new Paragraph({
-                  alignment: isRight ? AlignmentType.RIGHT : alignJustified,
-                  indent: isRight ? undefined : { firstLine: 709 },
-                  spacing: { line: 360, after: isRight ? 50 : 200 },
-                  children: [
-                    new TextRun({ text: lineText, bold: isBold, font: "Arial", size: 24 })
-                  ]
-                })
-              );
+              const textRuns = [];
+
+              function parseParagraphChildNodes(parent) {
+                const childNodes = Array.from(parent.childNodes);
+                childNodes.forEach(n => {
+                  if (n.nodeType === Node.TEXT_NODE) {
+                    const txt = n.nodeValue;
+                    if (txt) {
+                      let isYellow = false;
+                      let curr = n.parentElement;
+                      while (curr && curr !== child) {
+                        if (curr.classList && curr.classList.contains('pv-field')) {
+                          isYellow = true;
+                          break;
+                        }
+                        curr = curr.parentElement;
+                      }
+
+                      textRuns.push(new TextRun({
+                        text: txt,
+                        bold: isPBold || (n.parentElement && n.parentElement.tagName === 'STRONG'),
+                        highlight: isYellow ? "yellow" : undefined,
+                        font: "Arial",
+                        size: 24
+                      }));
+                    }
+                  } else if (n.nodeType === Node.ELEMENT_NODE) {
+                    if (n.tagName !== 'BR') {
+                      parseParagraphChildNodes(n);
+                    }
+                  }
+                });
+              }
+
+              parseParagraphChildNodes(child);
+
+              if (textRuns.length > 0) {
+                docParagraphs.push(
+                  new Paragraph({
+                    alignment: isRight ? AlignmentType.RIGHT : alignJustified,
+                    indent: isRight ? undefined : { firstLine: 709 },
+                    spacing: { line: 360, after: isRight ? 50 : 200 },
+                    children: textRuns
+                  })
+                );
+              }
             });
           }
           else if (child.id === 'pv-fotos-container' || child.classList.contains('preview-fotos-layout')) {

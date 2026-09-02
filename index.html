@@ -93,15 +93,15 @@
             <div class="form-grid">
               <div class="form-group">
                 <label for="input-data-designacao">Data da Designação</label>
-                <input type="text" id="input-data-designacao" placeholder="ex: 29 de agosto de 2026">
+                <input type="text" id="input-data-designacao" placeholder="ex: 02 de setembro de 2026">
               </div>
               <div class="form-group">
                 <label for="input-protocolo">Número do Protocolo</label>
-                <input type="text" id="input-protocolo" placeholder="ex: P01412/26">
+                <input type="text" id="input-protocolo" placeholder="ex: P00000/26">
               </div>
               <div class="form-group">
                 <label for="input-laudo-num">Número do Laudo</label>
-                <input type="text" id="input-laudo-num" placeholder="ex: 162836/2026">
+                <input type="text" id="input-laudo-num" placeholder="ex: 000000/2026">
               </div>
             </div>
           </fieldset>
@@ -111,19 +111,19 @@
             <div class="form-grid">
               <div class="form-group">
                 <label for="input-bo-num">Número do BO</label>
-                <input type="text" id="input-bo-num" placeholder="ex: EM7833-1/2026">
+                <input type="text" id="input-bo-num" placeholder="ex: AA0000-1/2026">
               </div>
               <div class="form-group">
                 <label for="input-del-elaboracao">Delegacia de Elaboração</label>
-                <input type="text" id="input-del-elaboracao" placeholder="ex: Del. Pol. Monte Mor">
+                <input type="text" id="input-del-elaboracao" placeholder="ex: Del. Pol. Elaboração">
               </div>
               <div class="form-group">
                 <label for="input-del-circunscricao">Delegacia de Circunscrição</label>
-                <input type="text" id="input-del-circunscricao" placeholder="ex: 1DP Hortolândia">
+                <input type="text" id="input-del-circunscricao" placeholder="ex: Del. Pol. Circunscrição">
               </div>
               <div class="form-group full-width">
                 <label for="input-natureza-exame">Natureza / Objetivo do Exame</label>
-                <input type="text" id="input-natureza-exame" placeholder="ex: Constatar funcionalidade">
+                <input type="text" id="input-natureza-exame" placeholder="ex: Descrição e fotografação">
               </div>
             </div>
 
@@ -138,7 +138,7 @@
               
               <div class="form-grid mt-2">
                 <div class="form-group">
-                  <input type="text" id="input-novo-lacre-num" placeholder="Número do lacre (ex: 030310)">
+                  <input type="text" id="input-novo-lacre-num" placeholder="Número do lacre (ex: 000000)">
                 </div>
                 <div class="form-group">
                   <button type="button" id="btn-add-lacre" class="btn btn-secondary btn-sm">➕ Adicionar Lacre</button>
@@ -216,8 +216,8 @@
                 <input type="text" id="input-lacre-saida" placeholder="ex: invólucro plástico (de lacre informado na capa deste laudo)">
               </div>
               <div class="form-group">
-                <label for="input-data-elaboracao">Data e Local de Elaboração por Extenso</label>
-                <input type="text" id="input-data-elaboracao" placeholder="ex: Americana, 29 de agosto de 2026">
+                <label for="input-data-elaboracao">Data e Local de Elaboração</label>
+                <input type="text" id="input-data-elaboracao" placeholder="ex: Americana, 02 de setembro de 2026">
               </div>
               <div class="form-group">
                 <label for="input-nome-perito">Nome do Perito Criminal</label>
@@ -244,7 +244,7 @@
               </div>
               <div class="form-group">
                 <label for="pref-del-elaboracao">Delegacia de Elaboração Frequente</label>
-                <input type="text" id="pref-del-elaboracao" placeholder="ex: Del. Pol. Monte Mor">
+                <input type="text" id="pref-del-elaboracao" placeholder="ex: Del. Pol. Elaboração">
               </div>
               <div class="form-group">
                 <label for="pref-cidade">Cidade / Núcleo de Perícias</label>
@@ -272,7 +272,7 @@
       </div>
     </section>
 
-    <!-- PAINEL DIREITO: PRÉ-VISUALIZÇÃO AO VIVO EDITÁVEL DA FOLHA A4 -->
+    <!-- PAINEL DIREITO: PRÉ-VISUALIZAÇÃO AO VIVO EDITÁVEL DA FOLHA A4 -->
     <section class="preview-panel">
       <div class="preview-toolbar">
         <span>📄 Pré-Visualização do Laudo (Editável na tela)</span>
@@ -313,7 +313,7 @@
             <!-- 3. LEVANTAMENTO FOTOGRÁFICO -->
             <h3 class="document-h3">3. LEVANTAMENTO FOTOGRÁFICO</h3>
             <div id="pv-fotos-container" class="preview-fotos-layout">
-              <!-- Fotos renderizadas dinâmicamente -->
+              <!-- Fotos renderizadas dinamicamente -->
             </div>
 
             <!-- 4. DAS CONSIDERAÇÕES FINAIS -->
@@ -324,7 +324,7 @@
 
             <!-- ASSINATURA E CIDADE/DATA ALINHADAS À DIREITA COM VÍRGULA E QUEBRA DE LINHA ENTRE NOME E CARGO -->
             <div class="signature-block-right">
-              <p id="pv-data-elaboracao" class="text-right">[Local e Data por extenso],</p>
+              <p id="pv-data-elaboracao" class="text-right">[Local e Data],</p>
               <br><br>
               <div class="signature-line-right"></div>
               <p id="pv-nome-perito-nome" class="text-right"><strong>[Nome do Perito Criminal]</strong></p>
