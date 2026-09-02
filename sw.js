@@ -1,5 +1,5 @@
 // Service Worker para PWA Offline Aitem
-const CACHE_NAME = 'aitem-v2';
+const CACHE_NAME = 'aitem-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -7,6 +7,7 @@ const ASSETS_TO_CACHE = [
   './script.js',
   './compendio.json',
   './cabecalho.png',
+  './rodape.png',
   './manifest.json',
   'https://unpkg.com/docx@8.5.0/build/index.umd.js',
   'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
@@ -16,7 +17,7 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Caching updated app assets');
+      console.log('[Service Worker] Caching updated app assets v3');
       return cache.addAll(ASSETS_TO_CACHE).catch(err => {
         console.warn('[Service Worker] Non-critical cache error:', err);
       });

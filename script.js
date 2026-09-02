@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Roda pe.png Footer & Page Numbering Starting at 2
+// Main Application Script with Object Editing & Duplication Features and SW Cache v3
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -41,6 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     compendioData: null,
     selectedCategory: null
   };
+
+  let editingObjetoId = null;
 
   const mesesMap = {
     'JAN': 'janeiro',
@@ -281,18 +283,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('div');
       card.className = 'category-card';
       card.innerHTML = `<span class="icon">${cat.icone}</span><span>${cat.nome}</span>`;
-      card.addEventListener('click', () => selectCategory(cat));
+      card.addEventListener('click', (e) => selectCategory(cat, e));
       compendioCategoriesContainer.appendChild(card);
     });
   }
 
-  function selectCategory(category) {
+  function selectCategory(category, e) {
     laudoState.selectedCategory = category;
+    editingObjetoId = null; // Nova adição
     
     document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
-    event.currentTarget.classList.add('selected');
+    if (e && e.currentTarget) e.currentTarget.classList.add('selected');
 
     document.getElementById('objeto-form-title').innerText = `Preencher: ${category.nome}`;
+    btnSalvarObjeto.innerText = '➕ Adicionar Objeto ao Laudo';
     renderObjetoLacreSelect();
     renderDynamicForm(category);
     objetoFormContainer.classList.remove('hidden');
@@ -401,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   btnCancelarObjeto.addEventListener('click', () => {
+    editingObjetoId = null;
     objetoFormContainer.classList.add('hidden');
     document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
   });
@@ -418,18 +423,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const descFormatada = buildFormattedDescription(cat.modelo_descricao, campoValues);
-
     const lacreIdSelected = parseInt(selectObjetoLacre.value) || laudoState.lacres[0].id;
 
-    const novoObjeto = {
-      id: Date.now(),
-      lacreId: lacreIdSelected,
-      categoriaNome: cat.nome,
-      descricaoFormatada: descFormatada,
-      campos: campoValues
-    };
+    if (editingObjetoId) {
+      // Atualizar objeto existente
+      const index = laudoState.objetos.findIndex(o => o.id === editingObjetoId);
+      if (index !== -1) {
+        laudoState.objetos[index] = {
+          id: editingObjetoId,
+          lacreId: lacreIdSelected,
+          categoriaNome: cat.nome,
+          categoriaId: cat.id,
+          descricaoFormatada: descFormatada,
+          campos: campoValues
+        };
+      }
+      editingObjetoId = null;
+    } else {
+      // Adicionar novo objeto
+      const novoObjeto = {
+        id: Date.now() + Math.random(),
+        lacreId: lacreIdSelected,
+        categoriaNome: cat.nome,
+        categoriaId: cat.id,
+        descricaoFormatada: descFormatada,
+        campos: campoValues
+      };
+      laudoState.objetos.push(novoObjeto);
+    }
 
-    laudoState.objetos.push(novoObjeto);
     renderObjetosLista();
     updatePreview();
 
@@ -483,6 +505,60 @@ document.addEventListener('DOMContentLoaded', () => {
     return desc;
   }
 
+  // ==========================================
+  // FUNÇÕES DE EDIÇÃO E DUPLICAÇÃO DE OBJETOS (NOVO)
+  // ==========================================
+  window.editarObjeto = function(id) {
+    const obj = laudoState.objetos.find(o => o.id === id);
+    if (!obj) return;
+
+    editingObjetoId = id;
+
+    // Encontrar categoria correspondente no compêndio
+    const category = laudoState.compendioData.categorias.find(cat => cat.nome === obj.categoriaNome || cat.id === obj.categoriaId) 
+                  || laudoState.compendioData.categorias[0];
+
+    laudoState.selectedCategory = category;
+
+    document.getElementById('objeto-form-title').innerText = `✏️ Editar Objeto: ${category.nome}`;
+    btnSalvarObjeto.innerText = '💾 Salvar Alterações do Objeto';
+
+    renderObjetoLacreSelect();
+    selectObjetoLacre.value = obj.lacreId;
+    renderDynamicForm(category);
+
+    // Preencher valores dos campos existentes
+    if (obj.campos) {
+      Object.keys(obj.campos).forEach(key => {
+        const el = document.getElementById(`dyn-field-${key}`);
+        if (el) {
+          el.value = obj.campos[key];
+        }
+      });
+    }
+
+    objetoFormContainer.classList.remove('hidden');
+    objetoFormContainer.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  window.duplicarObjeto = function(id) {
+    const obj = laudoState.objetos.find(o => o.id === id);
+    if (!obj) return;
+
+    const clone = {
+      id: Date.now() + Math.random(),
+      lacreId: obj.lacreId,
+      categoriaNome: obj.categoriaNome,
+      categoriaId: obj.categoriaId,
+      descricaoFormatada: obj.descricaoFormatada,
+      campos: obj.campos ? JSON.parse(JSON.stringify(obj.campos)) : {}
+    };
+
+    laudoState.objetos.push(clone);
+    renderObjetosLista();
+    updatePreview();
+  };
+
   function renderObjetosLista() {
     objetosLista.innerHTML = '';
     if (laudoState.objetos.length === 0) {
@@ -499,7 +575,11 @@ document.addEventListener('DOMContentLoaded', () => {
           <strong>Item ${idx + 1} ${laudoState.lacres.length > 1 ? `(Lacre ${lacreObj ? lacreObj.letra : ''}.)` : ''} - ${obj.categoriaNome}</strong>
           <p style="font-size: 0.8rem; color: #475569; margin-top: 0.2rem;">${obj.descricaoFormatada}</p>
         </div>
-        <button type="button" class="btn btn-danger btn-sm" onclick="removerObjeto(${obj.id})">🗑️ Excluir</button>
+        <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="editarObjeto(${obj.id})">✏️ Editar</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="duplicarObjeto(${obj.id})">📋 Duplicar</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="removerObjeto(${obj.id})">🗑️ Excluir</button>
+        </div>
       `;
       objetosLista.appendChild(item);
     });
@@ -908,9 +988,10 @@ document.addEventListener('DOMContentLoaded', () => {
       desc += '.';
 
       objetos.push({
-        id: Date.now(),
+        id: Date.now() + Math.random(),
         lacreId: laudoState.lacres[0] ? laudoState.lacres[0].id : 1,
         categoriaNome: 'Aparelho Celular (Smartphone)',
+        categoriaId: 'smartphone',
         descricaoFormatada: desc,
         campos: {
           marca: marcaEncontrada,
@@ -1051,7 +1132,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (RODAPÉ COM IMAGEM RODA PE.PNG CENTRALIZADA E PÁGINA INICIANDO EM 2)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (LENDO 100% O CONTEÚDO EDITÁVEL NA TELA)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
