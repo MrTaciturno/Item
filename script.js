@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Dynamic Access Date, Custom Model Defaults, and DOCX Yellow Highlights
+// Main Application Script with Fixed Paragraph Indentation (firstLine: 709) and DOCX Export
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -1180,7 +1180,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (COM DESTAQUE AMARELO PARA CAMPOS PADRÃO / PENDENTES)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (PARSER DE PARÁGRAFO LIMPO E DESTAQUE DE CAMPOS PADRÃO)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -1234,19 +1234,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const isSublacre = child.classList.contains('document-sublacre');
             const isPBold = child.querySelector('strong') !== null || isSublacre;
 
-            // Preservar quebras de linha explícitas (ex: \n ou <br>)
-            const rawLines = child.innerText.split(/\r?\n/);
+            const textRuns = [];
 
-            rawLines.forEach(rawLine => {
-              if (!cleanString(rawLine)) return;
+            function parseParagraphChildNodes(parent) {
+              const childNodes = Array.from(parent.childNodes);
+              childNodes.forEach(n => {
+                if (n.nodeType === 3) { // TEXT_NODE
+                  let txt = n.nodeValue;
+                  if (txt) {
+                    // Limpar quebras de linha internas do HTML para evitar quebras suaves (<w:br/>) que anulam o firstLine 709
+                    txt = txt.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ');
 
-              const textRuns = [];
+                    // Se for o primeiro trecho do parágrafo, remove espaço inicial desnecessário
+                    if (textRuns.length === 0) {
+                      txt = txt.trimStart();
+                    }
 
-              function parseParagraphChildNodes(parent) {
-                const childNodes = Array.from(parent.childNodes);
-                childNodes.forEach(n => {
-                  if (n.nodeType === Node.TEXT_NODE) {
-                    const txt = n.nodeValue;
                     if (txt) {
                       let isYellow = false;
                       let curr = n.parentElement;
@@ -1258,35 +1261,37 @@ document.addEventListener('DOMContentLoaded', () => {
                         curr = curr.parentElement;
                       }
 
+                      const isBoldNode = isPBold || (n.parentElement && n.parentElement.tagName === 'STRONG');
+
                       textRuns.push(new TextRun({
                         text: txt,
-                        bold: isPBold || (n.parentElement && n.parentElement.tagName === 'STRONG'),
+                        bold: isBoldNode,
                         highlight: isYellow ? "yellow" : undefined,
                         font: "Arial",
                         size: 24
                       }));
                     }
-                  } else if (n.nodeType === Node.ELEMENT_NODE) {
-                    if (n.tagName !== 'BR') {
-                      parseParagraphChildNodes(n);
-                    }
                   }
-                });
-              }
+                } else if (n.nodeType === 1) { // ELEMENT_NODE
+                  if (n.tagName !== 'BR') {
+                    parseParagraphChildNodes(n);
+                  }
+                }
+              });
+            }
 
-              parseParagraphChildNodes(child);
+            parseParagraphChildNodes(child);
 
-              if (textRuns.length > 0) {
-                docParagraphs.push(
-                  new Paragraph({
-                    alignment: isRight ? AlignmentType.RIGHT : alignJustified,
-                    indent: isRight ? undefined : { firstLine: 709 },
-                    spacing: { line: 360, after: isRight ? 50 : 200 },
-                    children: textRuns
-                  })
-                );
-              }
-            });
+            if (textRuns.length > 0) {
+              docParagraphs.push(
+                new Paragraph({
+                  alignment: isRight ? AlignmentType.RIGHT : alignJustified,
+                  indent: isRight ? undefined : { firstLine: 709 },
+                  spacing: { line: 360, after: isRight ? 50 : 200 },
+                  children: textRuns
+                })
+              );
+            }
           }
           else if (child.id === 'pv-fotos-container' || child.classList.contains('preview-fotos-layout')) {
             for (const foto of laudoState.fotos) {
