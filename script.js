@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Fixed Paragraph Indentation (firstLine: 709) and DOCX Export
+// Main Application Script with Full Compêndio Visual Editor, Extra Exam Paragraphs, Ready Laudo DOCX/PDF Extractor, and JSON Export/Import
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -74,20 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   let editingObjetoId = null;
+  let editingCompendioCatId = null;
 
   const mesesMap = {
-    'JAN': 'janeiro',
-    'FEV': 'fevereiro',
-    'MAR': 'março',
-    'ABR': 'abril',
-    'MAI': 'maio',
-    'JUN': 'junho',
-    'JUL': 'julho',
-    'AGO': 'agosto',
-    'SET': 'setembro',
-    'OUT': 'outubro',
-    'NOV': 'novembro',
-    'DEZ': 'dezembro'
+    'JAN': 'janeiro', 'FEV': 'fevereiro', 'MAR': 'março', 'ABR': 'abril',
+    'MAI': 'maio', 'JUN': 'junho', 'JUL': 'julho', 'AGO': 'agosto',
+    'SET': 'setembro', 'OUT': 'outubro', 'NOV': 'novembro', 'DEZ': 'dezembro'
   };
 
   // ==========================================
@@ -95,18 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   function numeroParaExtenso(num) {
     const n = parseInt(num) || 1;
-    const extensos = {
-      1: 'uma',
-      2: 'duas',
-      3: 'três',
-      4: 'quatro',
-      5: 'cinco',
-      6: 'seis',
-      7: 'sete',
-      8: 'oito',
-      9: 'nove',
-      10: 'dez'
-    };
+    const extensos = { 1: 'uma', 2: 'duas', 3: 'três', 4: 'quatro', 5: 'cinco', 6: 'seis', 7: 'sete', 8: 'oito', 9: 'nove', 10: 'dez' };
     return extensos[n] || `${n}`;
   }
 
@@ -160,13 +141,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputNomePerito = document.getElementById('input-nome-perito');
   const inputTextoFechamentoCustom = document.getElementById('input-texto-fechamento-custom');
 
-  // Preferences Inputs
+  // Preferences & Compêndio Manager Inputs
   const prefNomePerito = document.getElementById('pref-nome-perito');
   const prefDelElaboracao = document.getElementById('pref-del-elaboracao');
   const prefCidade = document.getElementById('pref-cidade');
   const btnSavePreferences = document.getElementById('btn-save-preferences');
   const inputCustomCompendioFile = document.getElementById('input-custom-compendio-file');
   const btnImportCompendio = document.getElementById('btn-import-compendio');
+  const btnExportCompendioJSON = document.getElementById('btn-export-compendio-json');
   const btnResetCompendio = document.getElementById('btn-reset-compendio');
 
   // OCR Elements
@@ -178,13 +160,37 @@ document.addEventListener('DOMContentLoaded', () => {
   const ocrResultsSummary = document.getElementById('ocr-results-summary');
   const ocrDetectedFieldsList = document.getElementById('ocr-detected-fields-list');
 
-  // Compêndio & Objetos
+  // Compêndio & Objetos (Capítulo 2)
   const compendioCategoriesContainer = document.getElementById('compendio-categories');
   const objetoFormContainer = document.getElementById('objeto-form-container');
   const formDinamicoObjeto = document.getElementById('form-dinamico-objeto');
+  const paragrafosAdicionaisContainer = document.getElementById('paragrafos-adicionais-container');
+  const paragrafosAdicionaisList = document.getElementById('paragrafos-adicionais-list');
   const btnSalvarObjeto = document.getElementById('btn-salvar-objeto');
   const btnCancelarObjeto = document.getElementById('btn-cancelar-objeto');
   const objetosLista = document.getElementById('objetos-lista');
+
+  // Editor do Compêndio (Aba 6)
+  const compendioManagerList = document.getElementById('compendio-manager-list');
+  const btnNovoModeloCompendio = document.getElementById('btn-novo-modelo-compendio');
+  const compendioEditorContainer = document.getElementById('compendio-editor-container');
+  const compendioEditorTitle = document.getElementById('compendio-editor-title');
+  const editorCatNome = document.getElementById('editor-cat-nome');
+  const editorCatIcone = document.getElementById('editor-cat-icone');
+  const editorCatTemplate = document.getElementById('editor-cat-template');
+  const editorCamposBuilder = document.getElementById('editor-campos-builder');
+  const btnAddCampoBuilder = document.getElementById('btn-add-campo-builder');
+  const editorParagrafosBuilder = document.getElementById('editor-paragrafos-builder');
+  const btnAddParagrafoBuilder = document.getElementById('btn-add-paragrafo-builder');
+  const btnSalvarModeloCompendio = document.getElementById('btn-salvar-modelo-compendio');
+  const btnCancelarModeloCompendio = document.getElementById('btn-cancelar-modelo-compendio');
+
+  // Leitor de Laudo Pronto (DOCX / PDF)
+  const laudoProntoFileInput = document.getElementById('laudo-pronto-file-input');
+  const laudoProntoStatus = document.getElementById('laudo-pronto-status');
+  const laudoProntoStatusText = document.getElementById('laudo-pronto-status-text');
+  const laudoProntoResults = document.getElementById('laudo-pronto-results');
+  const laudoProntoParagraphsList = document.getElementById('laudo-pronto-paragraphs-list');
 
   // Fotos Elements
   const inputFotosUpload = document.getElementById('input-fotos-upload');
@@ -257,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================
-  // CARREGAR COMPÊNDIO JSON / CUSTOMIZADO
+  // CARREGAR & EXPORTAR COMPÊNDIO JSON
   // ==========================================
   async function loadCompendio() {
     try {
@@ -269,10 +275,22 @@ document.addEventListener('DOMContentLoaded', () => {
         laudoState.compendioData = await resp.json();
       }
       renderCompendioCategories();
+      renderCompendioManagerList();
     } catch (err) {
       console.error('Erro ao carregar compêndio:', err);
     }
   }
+
+  btnExportCompendioJSON.addEventListener('click', () => {
+    if (!laudoState.compendioData) return;
+    const jsonStr = JSON.stringify(laudoState.compendioData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'compendio_custom.json';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
 
   btnImportCompendio.addEventListener('click', () => inputCustomCompendioFile.click());
 
@@ -290,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
         laudoState.compendioData = customData;
         localStorage.setItem('aitem_custom_compendio', JSON.stringify(customData));
         renderCompendioCategories();
+        renderCompendioManagerList();
         alert('Compêndio customizado importado com sucesso!');
       } catch (err) {
         alert('Erro ao importar compêndio JSON: ' + err.message);
@@ -306,6 +325,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function saveCompendioStateToLocalStorage() {
+    localStorage.setItem('aitem_custom_compendio', JSON.stringify(laudoState.compendioData));
+    renderCompendioCategories();
+    renderCompendioManagerList();
+  }
+
   function renderCompendioCategories() {
     if (!laudoState.compendioData || !laudoState.compendioData.categorias) return;
     compendioCategoriesContainer.innerHTML = '';
@@ -313,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
     laudoState.compendioData.categorias.forEach(cat => {
       const card = document.createElement('div');
       card.className = 'category-card';
-      card.innerHTML = `<span class="icon">${cat.icone}</span><span>${cat.nome}</span>`;
+      card.innerHTML = `<span class="icon">${cat.icone || '📦'}</span><span>${cat.nome}</span>`;
       card.addEventListener('click', (e) => selectCategory(cat, e));
       compendioCategoriesContainer.appendChild(card);
     });
@@ -330,6 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSalvarObjeto.innerText = '➕ Adicionar Objeto ao Laudo';
     renderObjetoLacreSelect();
     renderDynamicForm(category);
+    renderParagrafosAdicionaisCheckboxes(category);
     objetoFormContainer.classList.remove('hidden');
   }
 
@@ -390,10 +416,12 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==========================================
-  // FORMULÁRIO DINÂMICO E OPÇÃO "[OMITIR]"
+  // FORMULÁRIO DINÂMICO E PARÁGRAFOS ADICIONAIS DE EXAME
   // ==========================================
   function renderDynamicForm(category) {
     formDinamicoObjeto.innerHTML = '';
+
+    if (!category.campos || !Array.isArray(category.campos)) return;
 
     category.campos.forEach(campo => {
       const group = document.createElement('div');
@@ -412,12 +440,14 @@ document.addEventListener('DOMContentLoaded', () => {
         optOmitir.innerText = "-- Omitir (não mencionar) --";
         inputEl.appendChild(optOmitir);
 
-        campo.opcoes.forEach(opt => {
-          const option = document.createElement('option');
-          option.value = opt;
-          option.innerText = opt;
-          inputEl.appendChild(option);
-        });
+        if (campo.opcoes && Array.isArray(campo.opcoes)) {
+          campo.opcoes.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt;
+            option.innerText = opt;
+            inputEl.appendChild(option);
+          });
+        }
       } else if (campo.tipo === 'textarea') {
         inputEl = document.createElement('textarea');
         inputEl.rows = 3;
@@ -436,6 +466,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function renderParagrafosAdicionaisCheckboxes(category) {
+    paragrafosAdicionaisList.innerHTML = '';
+    if (!category.paragrafos_adicionais || category.paragrafos_adicionais.length === 0) {
+      paragrafosAdicionaisContainer.classList.add('hidden');
+      return;
+    }
+
+    paragrafosAdicionaisContainer.classList.remove('hidden');
+
+    category.paragrafos_adicionais.forEach(pAdd => {
+      const item = document.createElement('div');
+      item.className = 'paragrafo-adicional-checkbox-item';
+      item.innerHTML = `
+        <input type="checkbox" id="chk-padd-${pAdd.id}" data-padd-id="${pAdd.id}">
+        <div>
+          <strong>${pAdd.titulo}</strong>
+          <p style="color: #475569; margin-top: 0.1rem;">${pAdd.texto_padrao}</p>
+        </div>
+      `;
+      paragrafosAdicionaisList.appendChild(item);
+    });
+  }
+
   btnCancelarObjeto.addEventListener('click', () => {
     editingObjetoId = null;
     objetoFormContainer.classList.add('hidden');
@@ -447,12 +500,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cat = laudoState.selectedCategory;
     const campoValues = {};
-    cat.campos.forEach(campo => {
-      const el = document.getElementById(`dyn-field-${campo.id}`);
-      if (el) {
-        campoValues[campo.id] = el.value.trim();
-      }
-    });
+    if (cat.campos) {
+      cat.campos.forEach(campo => {
+        const el = document.getElementById(`dyn-field-${campo.id}`);
+        if (el) {
+          campoValues[campo.id] = el.value.trim();
+        }
+      });
+    }
+
+    // Coletar parágrafos adicionais selecionados
+    const selectedParagrafosAdicionais = [];
+    if (cat.paragrafos_adicionais) {
+      cat.paragrafos_adicionais.forEach(pAdd => {
+        const chk = document.getElementById(`chk-padd-${pAdd.id}`);
+        if (chk && chk.checked) {
+          selectedParagrafosAdicionais.push({
+            id: pAdd.id,
+            titulo: pAdd.titulo,
+            texto_padrao: pAdd.texto_padrao
+          });
+        }
+      });
+    }
 
     const descFormatada = buildFormattedDescription(cat.modelo_descricao, campoValues);
     const lacreIdSelected = parseInt(selectObjetoLacre.value) || laudoState.lacres[0].id;
@@ -466,7 +536,8 @@ document.addEventListener('DOMContentLoaded', () => {
           categoriaNome: cat.nome,
           categoriaId: cat.id,
           descricaoFormatada: descFormatada,
-          campos: campoValues
+          campos: campoValues,
+          paragrafosAdicionais: selectedParagrafosAdicionais
         };
       }
       editingObjetoId = null;
@@ -477,7 +548,8 @@ document.addEventListener('DOMContentLoaded', () => {
         categoriaNome: cat.nome,
         categoriaId: cat.id,
         descricaoFormatada: descFormatada,
-        campos: campoValues
+        campos: campoValues,
+        paragrafosAdicionais: selectedParagrafosAdicionais
       };
       laudoState.objetos.push(novoObjeto);
     }
@@ -490,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function buildFormattedDescription(template, campoValues) {
-    let desc = template;
+    let desc = template || '';
 
     if (campoValues.imei2 && campoValues.imei2.trim() && campoValues.imei2.trim() !== '[Omitir]') {
       desc = desc.replace('{imei2}', ` e IMEI 2: ${campoValues.imei2.trim()}`);
@@ -555,6 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderObjetoLacreSelect();
     selectObjetoLacre.value = obj.lacreId;
     renderDynamicForm(category);
+    renderParagrafosAdicionaisCheckboxes(category);
 
     if (obj.campos) {
       Object.keys(obj.campos).forEach(key => {
@@ -562,6 +635,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el) {
           el.value = obj.campos[key];
         }
+      });
+    }
+
+    if (obj.paragrafosAdicionais && Array.isArray(obj.paragrafosAdicionais)) {
+      obj.paragrafosAdicionais.forEach(pAdd => {
+        const chk = document.getElementById(`chk-padd-${pAdd.id}`);
+        if (chk) chk.checked = true;
       });
     }
 
@@ -579,7 +659,8 @@ document.addEventListener('DOMContentLoaded', () => {
       categoriaNome: obj.categoriaNome,
       categoriaId: obj.categoriaId,
       descricaoFormatada: obj.descricaoFormatada,
-      campos: obj.campos ? JSON.parse(JSON.stringify(obj.campos)) : {}
+      campos: obj.campos ? JSON.parse(JSON.stringify(obj.campos)) : {},
+      paragrafosAdicionais: obj.paragrafosAdicionais ? JSON.parse(JSON.stringify(obj.paragrafosAdicionais)) : []
     };
 
     laudoState.objetos.push(clone);
@@ -602,6 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div>
           <strong>Item ${idx + 1} ${laudoState.lacres.length > 1 ? `(Lacre ${lacreObj ? lacreObj.letra : ''}.)` : ''} - ${obj.categoriaNome}</strong>
           <p style="font-size: 0.8rem; color: #475569; margin-top: 0.2rem;">${obj.descricaoFormatada}</p>
+          ${obj.paragrafosAdicionais && obj.paragrafosAdicionais.length > 0 ? `<small style="color: #2563eb;">+ ${obj.paragrafosAdicionais.length} parágrafo(s) de exame adicional(is)</small>` : ''}
         </div>
         <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
           <button type="button" class="btn btn-secondary btn-sm" onclick="editarObjeto(${obj.id})">✏️ Editar</button>
@@ -617,6 +699,354 @@ document.addEventListener('DOMContentLoaded', () => {
     laudoState.objetos = laudoState.objetos.filter(o => o.id !== id);
     renderObjetosLista();
     updatePreview();
+  };
+
+  // ==========================================
+  // GERENCIADOR VISUAL DE MODELOS DO COMPÊNDIO (ABA 6)
+  // ==========================================
+  function renderCompendioManagerList() {
+    compendioManagerList.innerHTML = '';
+    if (!laudoState.compendioData || !laudoState.compendioData.categorias) return;
+
+    laudoState.compendioData.categorias.forEach(cat => {
+      const item = document.createElement('div');
+      item.className = 'objeto-item';
+      item.innerHTML = `
+        <div>
+          <strong>${cat.icone || '📦'} ${cat.nome}</strong>
+          <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.1rem;">${(cat.modelo_descricao || '').slice(0, 90)}...</p>
+          <small style="color: #475569;">${(cat.campos || []).length} campo(s) | ${(cat.paragrafos_adicionais || []).length} parágrafo(s) de exame</small>
+        </div>
+        <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="editarModeloCompendio('${cat.id}')">✏️ Editar Modelo</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="duplicarModeloCompendio('${cat.id}')">📋 Duplicar</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="excluirModeloCompendio('${cat.id}')">🗑️ Excluir</button>
+        </div>
+      `;
+      compendioManagerList.appendChild(item);
+    });
+  }
+
+  btnNovoModeloCompendio.addEventListener('click', () => {
+    editingCompendioCatId = null;
+    compendioEditorTitle.innerText = '➕ Criar Novo Modelo de Objeto no Compêndio';
+    editorCatNome.value = '';
+    editorCatIcone.value = '📦';
+    editorCatTemplate.value = '01 (um) objeto periciado de marca {marca}, modelo {modelo}.';
+    
+    // Default campos
+    renderCamposBuilder([
+      { id: 'marca', label: 'Marca', tipo: 'text', placeholder: 'ex: Samsung' },
+      { id: 'modelo', label: 'Modelo', tipo: 'text', placeholder: 'ex: Galaxy' }
+    ]);
+    renderParagrafosBuilder([]);
+
+    compendioEditorContainer.classList.remove('hidden');
+    compendioEditorContainer.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  window.editarModeloCompendio = function(catId) {
+    const cat = laudoState.compendioData.categorias.find(c => c.id === catId);
+    if (!cat) return;
+
+    editingCompendioCatId = catId;
+    compendioEditorTitle.innerText = `✏️ Editar Modelo: ${cat.nome}`;
+    editorCatNome.value = cat.nome;
+    editorCatIcone.value = cat.icone || '📦';
+    editorCatTemplate.value = cat.modelo_descricao || '';
+
+    renderCamposBuilder(cat.campos || []);
+    renderParagrafosBuilder(cat.paragrafos_adicionais || []);
+
+    compendioEditorContainer.classList.remove('hidden');
+    compendioEditorContainer.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  window.duplicarModeloCompendio = function(catId) {
+    const cat = laudoState.compendioData.categorias.find(c => c.id === catId);
+    if (!cat) return;
+
+    const cloneCat = JSON.parse(JSON.stringify(cat));
+    cloneCat.id = `cat_${Date.now()}`;
+    cloneCat.nome = `${cat.nome} (Cópia)`;
+
+    laudoState.compendioData.categorias.push(cloneCat);
+    saveCompendioStateToLocalStorage();
+    alert(`Modelo "${cloneCat.nome}" duplicado com sucesso!`);
+  };
+
+  window.excluirModeloCompendio = function(catId) {
+    if (laudoState.compendioData.categorias.length <= 1) {
+      alert('Você não pode excluir a única categoria do compêndio.');
+      return;
+    }
+    const cat = laudoState.compendioData.categorias.find(c => c.id === catId);
+    if (confirm(`Deseja realmente excluir a categoria "${cat ? cat.nome : ''}" do compêndio?`)) {
+      laudoState.compendioData.categorias = laudoState.compendioData.categorias.filter(c => c.id !== catId);
+      saveCompendioStateToLocalStorage();
+    }
+  };
+
+  function renderCamposBuilder(campos) {
+    editorCamposBuilder.innerHTML = '';
+    campos.forEach(c => addCampoBuilderRow(c));
+  }
+
+  function addCampoBuilderRow(campo = {}) {
+    const row = document.createElement('div');
+    row.className = 'editor-campo-row';
+    const cId = campo.id || `campo_${Date.now()}`;
+    row.innerHTML = `
+      <input type="text" placeholder="ID (ex: marca)" value="${cId}" class="campo-builder-id" style="width: 110px;">
+      <input type="text" placeholder="Rótulo (ex: Marca de Fabricação)" value="${campo.label || ''}" class="campo-builder-label" style="flex: 1;">
+      <select class="campo-builder-tipo" style="width: 100px;">
+        <option value="text" ${campo.tipo === 'text' ? 'selected' : ''}>Texto</option>
+        <option value="select" ${campo.tipo === 'select' ? 'selected' : ''}>Dropdown</option>
+        <option value="textarea" ${campo.tipo === 'textarea' ? 'selected' : ''}>Textarea</option>
+      </select>
+      <input type="text" placeholder="Opções (separadas por vírgula se dropdown)" value="${(campo.opcoes || []).join(', ')}" class="campo-builder-opcoes" style="flex: 1;">
+      <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">×</button>
+    `;
+    editorCamposBuilder.appendChild(row);
+  }
+
+  btnAddCampoBuilder.addEventListener('click', () => addCampoBuilderRow());
+
+  function renderParagrafosBuilder(paragrafos) {
+    editorParagrafosBuilder.innerHTML = '';
+    paragrafos.forEach(p => addParagrafoBuilderRow(p));
+  }
+
+  function addParagrafoBuilderRow(p = {}) {
+    const row = document.createElement('div');
+    row.className = 'editor-paragrafo-row';
+    const pId = p.id || `padd_${Date.now()}`;
+    row.innerHTML = `
+      <input type="text" placeholder="ID (ex: res_thc)" value="${pId}" class="padd-builder-id" style="width: 110px;">
+      <input type="text" placeholder="Título (ex: Resultado para THC)" value="${p.titulo || ''}" class="padd-builder-titulo" style="flex: 1;">
+      <textarea placeholder="Texto padrão resultante no laudo..." class="padd-builder-texto" style="flex: 2;" rows="2">${p.texto_padrao || ''}</textarea>
+      <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">×</button>
+    `;
+    editorParagrafosBuilder.appendChild(row);
+  }
+
+  btnAddParagrafoBuilder.addEventListener('click', () => addParagrafoBuilderRow());
+
+  btnCancelarModeloCompendio.addEventListener('click', () => {
+    editingCompendioCatId = null;
+    compendioEditorContainer.classList.add('hidden');
+  });
+
+  btnSalvarModeloCompendio.addEventListener('click', () => {
+    const nome = editorCatNome.value.trim();
+    if (!nome) {
+      alert('Por favor, informe o nome da categoria.');
+      return;
+    }
+
+    const icone = editorCatIcone.value.trim() || '📦';
+    const template = editorCatTemplate.value.trim();
+
+    // Coletar campos do builder
+    const campoRows = Array.from(editorCamposBuilder.querySelectorAll('.editor-campo-row'));
+    const campos = campoRows.map(row => {
+      const cId = row.querySelector('.campo-builder-id').value.trim() || `campo_${Math.random()}`;
+      const cLabel = row.querySelector('.campo-builder-label').value.trim() || cId;
+      const cTipo = row.querySelector('.campo-builder-tipo').value;
+      const cOpcoesRaw = row.querySelector('.campo-builder-opcoes').value.trim();
+      const cOpcoes = cOpcoesRaw ? cOpcoesRaw.split(',').map(o => o.trim()).filter(o => o.length > 0) : [];
+
+      return {
+        id: cId,
+        label: cLabel,
+        tipo: cTipo,
+        opcoes: cTipo === 'select' ? cOpcoes : undefined
+      };
+    });
+
+    // Coletar parágrafos adicionais do builder
+    const paddRows = Array.from(editorParagrafosBuilder.querySelectorAll('.editor-paragrafo-row'));
+    const paragrafos = paddRows.map(row => {
+      const pId = row.querySelector('.padd-builder-id').value.trim() || `padd_${Math.random()}`;
+      const pTitulo = row.querySelector('.padd-builder-titulo').value.trim() || 'Resultado de Exame';
+      const pTexto = row.querySelector('.padd-builder-texto').value.trim() || '';
+
+      return {
+        id: pId,
+        titulo: pTitulo,
+        texto_padrao: pTexto
+      };
+    });
+
+    if (editingCompendioCatId) {
+      const index = laudoState.compendioData.categorias.findIndex(c => c.id === editingCompendioCatId);
+      if (index !== -1) {
+        laudoState.compendioData.categorias[index] = {
+          id: editingCompendioCatId,
+          nome,
+          icone,
+          modelo_descricao: template,
+          campos,
+          paragrafos_adicionais: paragrafos
+        };
+      }
+    } else {
+      const newId = `cat_${Date.now()}`;
+      laudoState.compendioData.categorias.push({
+        id: newId,
+        nome,
+        icone,
+        modelo_descricao: template,
+        campos,
+        paragrafos_adicionais: paragrafos
+      });
+    }
+
+    saveCompendioStateToLocalStorage();
+    compendioEditorContainer.classList.add('hidden');
+    editingCompendioCatId = null;
+    alert(`Modelo de objeto "${nome}" salvo no compêndio!`);
+  });
+
+  // ==========================================
+  // LEITOR E EXTRATOR DE LAUDO PRONTO (DOCX / PDF)
+  // ==========================================
+  laudoProntoFileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    laudoProntoStatus.classList.remove('hidden');
+    laudoProntoStatusText.innerText = `Extraindo parágrafos do capítulo 2 do arquivo ${file.name}...`;
+
+    try {
+      let extractedParagraphs = [];
+
+      if (file.name.endsWith('.docx')) {
+        extractedParagraphs = await extractChapter2FromDocxFile(file);
+      } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+        extractedParagraphs = await extractChapter2FromPdfFile(file);
+      }
+
+      laudoProntoStatus.classList.add('hidden');
+
+      if (extractedParagraphs.length > 0) {
+        laudoProntoResults.classList.remove('hidden');
+        renderLaudoProntoParagraphs(extractedParagraphs);
+      } else {
+        alert('Não foi possível localizar o Capítulo 2 ("DO(S) OBJETO(S) E DOS EXAMES") neste arquivo.');
+      }
+    } catch (err) {
+      console.error('Erro ao ler laudo pronto:', err);
+      laudoProntoStatus.classList.add('hidden');
+      alert('Erro ao extrair conteúdo do arquivo: ' + err.message);
+    }
+  });
+
+  async function extractChapter2FromDocxFile(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const decoder = new TextDecoder('utf-8');
+    const fullContent = decoder.decode(new Uint8Array(arrayBuffer));
+
+    const paragraphs = [];
+    const pRegex = /<w:p[^>]*>(.*?)<\/w:p>/gs;
+    const tRegex = /<w:t[^>]*>(.*?)<\/w:t>/gs;
+
+    let pMatch;
+    while ((pMatch = pRegex.exec(fullContent)) !== null) {
+      const pContent = pMatch[1];
+      let pText = '';
+      let tMatch;
+      while ((tMatch = tRegex.exec(pContent)) !== null) {
+        pText += tMatch[1];
+      }
+      pText = cleanString(pText);
+      if (pText) paragraphs.push(pText);
+    }
+
+    let inChapter2 = false;
+    const chapter2Paragraphs = [];
+
+    for (let i = 0; i < paragraphs.length; i++) {
+      const p = paragraphs[i];
+      if (/2\.\s*DO\(S\)\s*OBJETO\(S\)\s*E\s*DOS\s*EXAMES/i.test(p) || /DO\(S\)\s*OBJETO\(S\)\s*E\s*DOS\s*EXAMES/i.test(p)) {
+        inChapter2 = true;
+        continue;
+      }
+      if (inChapter2) {
+        if (/^\d\.\s*[A-Z\s]+/i.test(p) || /3\.\s*LEVANTAMENTO/i.test(p) || /4\.\s*DAS\s*CONSIDERAÇÕES/i.test(p)) {
+          break;
+        }
+        chapter2Paragraphs.push(p);
+      }
+    }
+
+    return chapter2Paragraphs.length > 0 ? chapter2Paragraphs : paragraphs.slice(0, 15);
+  }
+
+  async function extractChapter2FromPdfFile(file) {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(item => item.str).join(' ');
+      fullText += pageText + '\n';
+    }
+
+    const lines = fullText.split('\n').map(l => cleanString(l)).filter(l => l.length > 0);
+    let inChapter2 = false;
+    const chapter2Paragraphs = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (/2\.\s*DO\(S\)\s*OBJETO\(S\)\s*E\s*DOS\s*EXAMES/i.test(line) || /DO\(S\)\s*OBJETO\(S\)\s*E\s*DOS\s*EXAMES/i.test(line)) {
+        inChapter2 = true;
+        continue;
+      }
+      if (inChapter2) {
+        if (/^\d\.\s*[A-Z\s]+/i.test(line) || /3\.\s*LEVANTAMENTO/i.test(line) || /4\.\s*DAS\s*CONSIDERAÇÕES/i.test(line)) {
+          break;
+        }
+        chapter2Paragraphs.push(line);
+      }
+    }
+
+    return chapter2Paragraphs.length > 0 ? chapter2Paragraphs : lines.slice(0, 15);
+  }
+
+  function renderLaudoProntoParagraphs(paragraphs) {
+    laudoProntoParagraphsList.innerHTML = '';
+    paragraphs.forEach((pText, idx) => {
+      const item = document.createElement('div');
+      item.className = 'objeto-item';
+      item.innerHTML = `
+        <div style="flex: 1;">
+          <strong>Parágrafo Extraído ${idx + 1}:</strong>
+          <p style="font-size: 0.8rem; color: #475569; margin-top: 0.2rem;">${pText}</p>
+        </div>
+        <button type="button" class="btn btn-primary btn-sm" onclick="converterParagrafoEmModelo('${encodeURIComponent(pText)}')">⚡ Criar Modelo com Este Texto</button>
+      `;
+      laudoProntoParagraphsList.appendChild(item);
+    });
+  }
+
+  window.converterParagrafoEmModelo = function(encodedText) {
+    const rawText = decodeURIComponent(encodedText);
+    editingCompendioCatId = null;
+    compendioEditorTitle.innerText = '⚡ Criar Modelo do Compêndio a partir de Laudo Pronto';
+    editorCatNome.value = 'Modelo Importado';
+    editorCatIcone.value = '📋';
+    editorCatTemplate.value = rawText;
+
+    renderCamposBuilder([
+      { id: 'marca', label: 'Marca', tipo: 'text', placeholder: 'ex: Samsung' }
+    ]);
+    renderParagrafosBuilder([]);
+
+    compendioEditorContainer.classList.remove('hidden');
+    compendioEditorContainer.scrollIntoView({ behavior: 'smooth' });
   };
 
   // ==========================================
@@ -1026,7 +1456,8 @@ document.addEventListener('DOMContentLoaded', () => {
           imei1: imei1,
           imei2: imei2,
           sn: sn
-        }
+        },
+        paragrafosAdicionais: []
       });
     }
 
@@ -1114,6 +1545,16 @@ document.addEventListener('DOMContentLoaded', () => {
           p.className = 'document-p text-justify';
           p.innerText = obj.descricaoFormatada;
           pvObjetosContainer.appendChild(p);
+
+          // Renderizar parágrafos adicionais de exame se houver
+          if (obj.paragrafosAdicionais && obj.paragrafosAdicionais.length > 0) {
+            obj.paragrafosAdicionais.forEach(pAdd => {
+              const pExtra = document.createElement('p');
+              pExtra.className = 'document-p text-justify';
+              pExtra.innerText = pAdd.texto_padrao;
+              pvObjetosContainer.appendChild(pExtra);
+            });
+          }
         });
       } else {
         laudoState.lacres.forEach(lacre => {
@@ -1129,6 +1570,15 @@ document.addEventListener('DOMContentLoaded', () => {
               p.className = 'document-p text-justify';
               p.innerText = obj.descricaoFormatada;
               pvObjetosContainer.appendChild(p);
+
+              if (obj.paragrafosAdicionais && obj.paragrafosAdicionais.length > 0) {
+                obj.paragrafosAdicionais.forEach(pAdd => {
+                  const pExtra = document.createElement('p');
+                  pExtra.className = 'document-p text-justify';
+                  pExtra.innerText = pAdd.texto_padrao;
+                  pvObjetosContainer.appendChild(pExtra);
+                });
+              }
             });
           }
         });
@@ -1180,7 +1630,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (PARSER DE PARÁGRAFO LIMPO E DESTAQUE DE CAMPOS PADRÃO)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -1242,10 +1692,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (n.nodeType === 3) { // TEXT_NODE
                   let txt = n.nodeValue;
                   if (txt) {
-                    // Limpar quebras de linha internas do HTML para evitar quebras suaves (<w:br/>) que anulam o firstLine 709
                     txt = txt.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ');
 
-                    // Se for o primeiro trecho do parágrafo, remove espaço inicial desnecessário
                     if (textRuns.length === 0) {
                       txt = txt.trimStart();
                     }
@@ -1341,7 +1789,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       processElementTree(previewEditableContent);
 
-      // TABELA DE RODAPÉ COM IMAGEM RODA PE.PNG CENTRALIZADA E NUMERAÇÃO DE PÁGINA INICIANDO EM 2
       const footerTable = new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
         borders: {

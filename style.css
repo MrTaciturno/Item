@@ -413,6 +413,42 @@ textarea#ocr-pasted-text:focus {
   font-size: 0.85rem;
 }
 
+/* EDITOR DO COMPÊNDIO & PARÁGRAFOS ADICIONAIS */
+.editor-campo-row, .editor-paragrafo-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  background: #f8fafc;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.editor-campo-row input, .editor-campo-row select,
+.editor-paragrafo-row input, .editor-paragrafo-row textarea {
+  font-size: 0.8rem;
+  padding: 0.35rem;
+}
+
+.paragrafo-adicional-checkbox-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  margin-bottom: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.paragrafo-adicional-checkbox-item input[type="checkbox"] {
+  margin-top: 0.25rem;
+  width: auto;
+}
+
 /* GALERIA DE FOTOS E ROTAÇÃO */
 .fotos-gallery {
   display: grid;
