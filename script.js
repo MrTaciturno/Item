@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Enhanced Handwritten Laudo & Stamped Date OCR Parser
+// Main Application Script with Roda pe.png Footer & Page Numbering Starting at 2
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -628,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==========================================
-  // OCR & PARSER INTELIGENTE REFINADO PARA GOOGLE LENS E MANUSCRITOS
+  // OCR & PARSER INTELIGENTE REFINADO
   // ==========================================
   btnParseText.addEventListener('click', () => {
     const text = ocrPastedText.value;
@@ -703,7 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cleanSingleLine = rawText.replace(/\s+/g, ' ');
     const detected = [];
 
-    // 1. Protocolo (ex: P01934/26 ou P01412/26)
+    // 1. Protocolo
     const protocoloMatch = text.match(/(?:protocolo[^\n]*?)\s*([P|p]\s*[\d\s\/]+)/i) 
                         || cleanSingleLine.match(/\b(P\s*\d{4,5}\/\d{2})\b/i);
     if (protocoloMatch) {
@@ -713,7 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Protocolo: ${cleanProtocolo}`);
     }
 
-    // 2. Número do Laudo Manuscrito / Rotulado (ex: 330272/26, 330272/2026 ou 330272; fallback: 000000/anoAtual)
+    // 2. Número do Laudo Manuscrito / Rotulado
     let laudoNum = '';
     const laudoRotulado = text.match(/(?:laudo|laudo\s*n?[º°]?\s*)\s*(\d{4,6}(?:\s*\/\s*\d{2,4})?)/i);
     const laudoStandalone = text.match(/\b(\d{5,6}\s*\/\s*\d{2,4})\b/);
@@ -741,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
     laudoState.preambulo.laudoNum = laudoNum;
     inputLaudoNum.value = laudoNum;
 
-    // 3. BO (ex: CX0037-1/2026 ou EM7833-1/2026)
+    // 3. BO
     const boMatch = text.match(/(?:BO\s*N?[º°]?\s*:?\s*|boletim\s*n?[º°]?\s*:?\s*)([A-Z]{2}\d{4,6}-\d\/\d{4})/i) 
                  || cleanSingleLine.match(/\b([A-Z]{2}\d{4,6}-\d\/\d{4})\b/i);
     if (boMatch) {
@@ -809,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
       detected.push(`Lacre(s) Encontrado(s): ${lacresEncontrados.join(', ')}`);
     }
 
-    // 8. Data da Designação (Carimbo '27 AGO 2026', Extenso '27 de agosto de 2026' ou '27/08/2026')
+    // 8. Data da Designação
     let dataDesignacao = '';
     const dataCarimboMatch = text.match(/\b(\d{1,2})\s+([A-Z]{3})\s+(\d{4})\b/i);
     const dataExtensoMatch = text.match(/(\d{1,2}\s+de\s+[a-zç]+\s+de\s+\d{4})/i);
@@ -1038,7 +1038,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalPaginasCalculado = calculateTotalPagesCalculated();
     document.getElementById('pv-total-paginas').innerText = totalPaginasCalculado;
     document.getElementById('pv-total-paginas-extenso').innerText = numeroParaExtenso(totalPaginasCalculado);
-    document.getElementById('pv-footer-pagina').innerText = totalPaginasCalculado;
+    // A numeração no rodapé inicia em 2 para a 1ª página
+    document.getElementById('pv-footer-pagina').innerText = 2;
 
     document.getElementById('pv-lacre-saida').innerText = laudoState.fechamento.lacreSaida || '[Lacre Saída]';
     document.getElementById('pv-data-elaboracao').innerText = laudoState.fechamento.dataElaboracao || '[Local e Data]';
@@ -1050,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (LENDO 100% O CONTEÚDO EDITÁVEL NA TELA)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (RODAPÉ COM IMAGEM RODA PE.PNG CENTRALIZADA E PÁGINA INICIANDO EM 2)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -1069,6 +1070,14 @@ document.addEventListener('DOMContentLoaded', () => {
         cabecalhoBuffer = await resp.arrayBuffer();
       } catch (err) {
         console.warn('Não foi possível carregar cabecalho.png para a exportação:', err);
+      }
+
+      let rodapeBuffer = null;
+      try {
+        const resp = await fetch('rodape.png');
+        rodapeBuffer = await resp.arrayBuffer();
+      } catch (err) {
+        console.warn('Não foi possível carregar rodape.png para a exportação:', err);
       }
 
       const docParagraphs = [];
@@ -1157,8 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       processElementTree(previewEditableContent);
 
-      // TABELA DE RODAPÉ COM NOTA LEGAL EM LETRA DIMINUTA E NÚMERO DE PÁGINA
-      const legalFooterText = "Esta folha é propriedade da Superintendência da Polícia Técnico-Científica e seu conteúdo não pode ser copiado ou revelado a terceiros sem autorização expressa";
+      // TABELA DE RODAPÉ COM IMAGEM RODA PE.PNG CENTRALIZADA E NUMERAÇÃO DE PÁGINA INICIANDO EM 2
       const footerTable = new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
         borders: {
@@ -1174,13 +1182,17 @@ document.addEventListener('DOMContentLoaded', () => {
             children: [
               new TableCell({
                 width: { size: 85, type: WidthType.PERCENTAGE },
-                children: [
+                children: rodapeBuffer ? [
                   new Paragraph({
+                    alignment: AlignmentType.CENTER,
                     children: [
-                      new TextRun({ text: legalFooterText, font: "Arial", size: 14 })
+                      new ImageRun({
+                        data: rodapeBuffer,
+                        transformation: { width: 480, height: 26 }
+                      })
                     ]
                   })
-                ]
+                ] : []
               }),
               new TableCell({
                 width: { size: 15, type: WidthType.PERCENTAGE },
@@ -1188,8 +1200,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   new Paragraph({
                     alignment: AlignmentType.RIGHT,
                     children: [
-                      new TextRun({ text: "Fls. ", font: "Arial", size: 14 }),
-                      new TextRun({ children: [PageNumber.CURRENT], font: "Arial", size: 14 })
+                      new TextRun({ text: "Fls. ", font: "Arial", size: 16 }),
+                      new TextRun({ children: [PageNumber.CURRENT], font: "Arial", size: 16 })
                     ]
                   })
                 ]
@@ -1203,6 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sections: [{
           properties: {
             page: {
+              pageNumbers: { start: 2 },
               margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 }
             }
           },

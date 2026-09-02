@@ -600,11 +600,11 @@ textarea#ocr-pasted-text:focus {
   margin-bottom: 0.5rem;
 }
 
-/* RODAPÉ ATUALIZADO (LETRA DIMINUTA COM NOTA LEGAL E SEM NÚMERO DE LAUDO) */
+/* RODAPÉ COM IMAGEM RODA PE.PNG CENTRALIZADA E NUMERAÇÃO DE PÁGINA */
 .preview-footer {
   margin-top: 2rem;
   font-family: 'Arial', sans-serif;
-  font-size: 7.5pt;
+  font-size: 8pt;
   color: #475569;
 }
 
@@ -621,11 +621,24 @@ textarea#ocr-pasted-text:focus {
   gap: 1rem;
 }
 
-.footer-legal-text {
-  font-size: 7pt;
-  color: #475569;
+.footer-img-container {
   flex: 1;
-  line-height: 1.2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rodape-img {
+  max-height: 26px;
+  width: auto;
+  max-width: 85%;
+  object-fit: contain;
+}
+
+.footer-page-num {
+  font-size: 8pt;
+  color: #000000;
+  white-space: nowrap;
 }
 
 /* UTILS & RESPONSIVE */
