@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Object Editing & Duplication Features and SW Cache v3
+// Main Application Script with Trailing Comma after Date & Explicit Line Feed after Perito Name
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function selectCategory(category, e) {
     laudoState.selectedCategory = category;
-    editingObjetoId = null; // Nova adição
+    editingObjetoId = null;
     
     document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
     if (e && e.currentTarget) e.currentTarget.classList.add('selected');
@@ -426,7 +426,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const lacreIdSelected = parseInt(selectObjetoLacre.value) || laudoState.lacres[0].id;
 
     if (editingObjetoId) {
-      // Atualizar objeto existente
       const index = laudoState.objetos.findIndex(o => o.id === editingObjetoId);
       if (index !== -1) {
         laudoState.objetos[index] = {
@@ -440,7 +439,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       editingObjetoId = null;
     } else {
-      // Adicionar novo objeto
       const novoObjeto = {
         id: Date.now() + Math.random(),
         lacreId: lacreIdSelected,
@@ -506,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // FUNÇÕES DE EDIÇÃO E DUPLICAÇÃO DE OBJETOS (NOVO)
+  // FUNÇÕES DE EDIÇÃO E DUPLICAÇÃO DE OBJETOS
   // ==========================================
   window.editarObjeto = function(id) {
     const obj = laudoState.objetos.find(o => o.id === id);
@@ -514,7 +512,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     editingObjetoId = id;
 
-    // Encontrar categoria correspondente no compêndio
     const category = laudoState.compendioData.categorias.find(cat => cat.nome === obj.categoriaNome || cat.id === obj.categoriaId) 
                   || laudoState.compendioData.categorias[0];
 
@@ -527,7 +524,6 @@ document.addEventListener('DOMContentLoaded', () => {
     selectObjetoLacre.value = obj.lacreId;
     renderDynamicForm(category);
 
-    // Preencher valores dos campos existentes
     if (obj.campos) {
       Object.keys(obj.campos).forEach(key => {
         const el = document.getElementById(`dyn-field-${key}`);
@@ -1119,12 +1115,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalPaginasCalculado = calculateTotalPagesCalculated();
     document.getElementById('pv-total-paginas').innerText = totalPaginasCalculado;
     document.getElementById('pv-total-paginas-extenso').innerText = numeroParaExtenso(totalPaginasCalculado);
-    // A numeração no rodapé inicia em 2 para a 1ª página
     document.getElementById('pv-footer-pagina').innerText = 2;
 
     document.getElementById('pv-lacre-saida').innerText = laudoState.fechamento.lacreSaida || '[Lacre Saída]';
-    document.getElementById('pv-data-elaboracao').innerText = laudoState.fechamento.dataElaboracao || '[Local e Data]';
-    document.getElementById('pv-nome-perito').innerHTML = `<strong>${laudoState.fechamento.nomePerito || '[Nome do Perito]'}</strong><br>Perito Criminal`;
+    
+    // CIDADE E DATA COM VÍRGULA NO FINAL
+    let dataElabText = laudoState.fechamento.dataElaboracao || '[Local e Data]';
+    dataElabText = dataElabText.trim();
+    if (dataElabText && !dataElabText.endsWith(',')) {
+      dataElabText += ',';
+    }
+    document.getElementById('pv-data-elaboracao').innerText = dataElabText;
+
+    // NOME E CARGO EM PARÁGRAFOS SEPARADOS
+    const elNomePerito = document.getElementById('pv-nome-perito-nome');
+    if (elNomePerito) {
+      elNomePerito.innerHTML = `<strong>${laudoState.fechamento.nomePerito || '[Nome do Perito]'}</strong>`;
+    }
+    const elCargoPerito = document.getElementById('pv-nome-perito-cargo');
+    if (elCargoPerito) {
+      elCargoPerito.innerText = `Perito Criminal`;
+    }
   }
 
   function cleanString(str) {
@@ -1132,7 +1143,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (LENDO 100% O CONTEÚDO EDITÁVEL NA TELA)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (COM PRESERVAÇÃO DE VÍRGULA E QUEBRAS DE LINHA SEPARADAS)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -1182,22 +1193,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
           else if (tagName === 'P') {
-            const pText = cleanString(child.innerText);
-            if (!pText) return;
-
             const isRight = child.classList.contains('text-right');
             const isSublacre = child.classList.contains('document-sublacre');
+            const isBold = child.querySelector('strong') !== null || isSublacre;
 
-            docParagraphs.push(
-              new Paragraph({
-                alignment: isRight ? AlignmentType.RIGHT : alignJustified,
-                indent: isRight ? undefined : { firstLine: 709 },
-                spacing: { line: 360, after: isRight ? 100 : 200 },
-                children: [
-                  new TextRun({ text: pText, bold: isSublacre, font: "Arial", size: 24 })
-                ]
-              })
-            );
+            // Preservar quebras de linha explícitas (ex: \n ou <br>)
+            const rawLines = child.innerText.split(/\r?\n/);
+
+            rawLines.forEach(rawLine => {
+              const lineText = cleanString(rawLine);
+              if (!lineText) return;
+
+              docParagraphs.push(
+                new Paragraph({
+                  alignment: isRight ? AlignmentType.RIGHT : alignJustified,
+                  indent: isRight ? undefined : { firstLine: 709 },
+                  spacing: { line: 360, after: isRight ? 50 : 200 },
+                  children: [
+                    new TextRun({ text: lineText, bold: isBold, font: "Arial", size: 24 })
+                  ]
+                })
+              );
+            });
           }
           else if (child.id === 'pv-fotos-container' || child.classList.contains('preview-fotos-layout')) {
             for (const foto of laudoState.fotos) {
