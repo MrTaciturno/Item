@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Word 2016 OpenXML Schema Compliant Footer & Header
+// Main Application Script with Word 2016 OpenXML Schema Compliant Footer, Reduced Title Spacing, and 1.0 Signature Line Spacing
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -509,7 +509,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Coletar parágrafos adicionais selecionados
     const selectedParagrafosAdicionais = [];
     if (cat.paragrafos_adicionais) {
       cat.paragrafos_adicionais.forEach(pAdd => {
@@ -1498,7 +1497,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Monitorar edições diretas no preview editável
     previewEditableContent.addEventListener('input', (e) => {
       const target = e.target;
       if (target && target.classList && target.classList.contains('pv-field')) {
@@ -1684,7 +1682,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (COMPATÍVEL COM WORD 2016)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (ESPAÇAMENTO 1,0 PARA LINHAS DE ASSINATURA E ESPAÇAMENTO DE TÍTULO REDUZIDO)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -1729,7 +1727,7 @@ document.addEventListener('DOMContentLoaded', () => {
               docParagraphs.push(
                 new Paragraph({
                   alignment: AlignmentType.LEFT,
-                  spacing: { before: 300, after: 150 },
+                  spacing: { before: 180, after: 80 }, // Espaçamento reduzido dos títulos (9pt antes, 4pt depois)
                   children: [new TextRun({ text: hText, bold: true, font: "Arial", size: 24 })]
                 })
               );
@@ -1787,11 +1785,13 @@ document.addEventListener('DOMContentLoaded', () => {
             parseParagraphChildNodes(child);
 
             if (textRuns.length > 0) {
+              // Linhas de assinatura/data à direita (isRight): espaçamento entre linhas 1,0 (line: 240) e space after: 0
+              // Parágrafos normais do corpo (text-justify): espaçamento entre linhas 1,5 (line: 360) e space after: 200
               docParagraphs.push(
                 new Paragraph({
                   alignment: isRight ? AlignmentType.RIGHT : alignJustified,
                   indent: isRight ? undefined : { firstLine: 709 },
-                  spacing: { line: 360, after: isRight ? 50 : 200 },
+                  spacing: { line: isRight ? 240 : 360, after: isRight ? 0 : 200 },
                   children: textRuns
                 })
               );
@@ -1864,8 +1864,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const footerTable = new Table({
-        width: { size: 5000, type: WidthType.PERCENTAGE }, // 5000 = 100% no OpenXML
-        columnWidths: [4250, 750], // 85% e 15%
+        width: { size: 5000, type: WidthType.PERCENTAGE },
+        columnWidths: [4250, 750],
         borders: {
           top: { style: BorderStyle.NONE, size: 0, color: "auto" },
           bottom: { style: BorderStyle.NONE, size: 0, color: "auto" },

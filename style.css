@@ -550,8 +550,8 @@ textarea#ocr-pasted-text:focus {
   font-size: 12pt;
   font-weight: bold;
   text-align: left;
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
+  margin-top: 1rem;
+  margin-bottom: 0.4rem;
   text-transform: uppercase;
 }
 
@@ -619,14 +619,20 @@ textarea#ocr-pasted-text:focus {
   text-align: center;
 }
 
-/* ASSINATURA E CIDADE/DATA ALINHAMENTO À DIREITA */
+/* ASSINATURA E CIDADE/DATA ALINHAMENTO À DIREITA COM ESPAÇAMENTO 1,0 SIMPLES */
 .signature-block-right {
-  margin-top: 3rem;
+  margin-top: 2rem;
   page-break-inside: avoid;
   text-align: right;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  line-height: 1.0;
+}
+
+.signature-block-right p {
+  line-height: 1.0;
+  margin-bottom: 0.1rem;
 }
 
 .signature-line-right {
