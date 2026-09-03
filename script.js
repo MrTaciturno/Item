@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Full Compêndio Visual Editor, Extra Exam Paragraphs, Ready Laudo DOCX/PDF Extractor, and JSON Export/Import
+// Main Application Script with Dynamic Access Date, Custom Model Defaults, DOCX Yellow Highlights, and Object Filename Generator
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -734,7 +734,6 @@ document.addEventListener('DOMContentLoaded', () => {
     editorCatIcone.value = '📦';
     editorCatTemplate.value = '01 (um) objeto periciado de marca {marca}, modelo {modelo}.';
     
-    // Default campos
     renderCamposBuilder([
       { id: 'marca', label: 'Marca', tipo: 'text', placeholder: 'ex: Samsung' },
       { id: 'modelo', label: 'Modelo', tipo: 'text', placeholder: 'ex: Galaxy' }
@@ -847,7 +846,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const icone = editorCatIcone.value.trim() || '📦';
     const template = editorCatTemplate.value.trim();
 
-    // Coletar campos do builder
     const campoRows = Array.from(editorCamposBuilder.querySelectorAll('.editor-campo-row'));
     const campos = campoRows.map(row => {
       const cId = row.querySelector('.campo-builder-id').value.trim() || `campo_${Math.random()}`;
@@ -864,7 +862,6 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     });
 
-    // Coletar parágrafos adicionais do builder
     const paddRows = Array.from(editorParagrafosBuilder.querySelectorAll('.editor-paragrafo-row'));
     const paragrafos = paddRows.map(row => {
       const pId = row.querySelector('.padd-builder-id').value.trim() || `padd_${Math.random()}`;
@@ -1500,6 +1497,27 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePreview();
       });
     });
+
+    // Monitorar edições diretas no preview editável
+    previewEditableContent.addEventListener('input', (e) => {
+      const target = e.target;
+      if (target && target.classList && target.classList.contains('pv-field')) {
+        const id = target.id;
+        let def = '';
+        if (id === 'pv-data-designacao') def = DEFAULTS.dataDesignacao;
+        else if (id === 'pv-protocolo') def = DEFAULTS.protocolo;
+        else if (id === 'pv-laudo-num') def = DEFAULTS.laudoNum;
+        else if (id === 'pv-bo-num') def = DEFAULTS.boNum;
+        else if (id === 'pv-del-elaboracao') def = DEFAULTS.delElaboracao;
+        else if (id === 'pv-del-circunscricao') def = DEFAULTS.delCircunscricao;
+        else if (id === 'pv-natureza-exame') def = DEFAULTS.naturezaExame;
+        else if (id === 'pv-lacre-saida') def = DEFAULTS.lacreSaida;
+
+        if (def && target.innerText.trim() !== def.trim()) {
+          target.classList.remove('pv-field');
+        }
+      }
+    });
   }
 
   function calculateTotalPagesCalculated() {
@@ -1513,7 +1531,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function formatSpanField(id, text, defaultVal) {
     const cleanVal = (text || '').trim();
     const cleanDef = (defaultVal || '').trim();
-    const isDefault = !cleanVal || cleanVal === cleanDef;
+    const isDefault = (!cleanVal || cleanVal === cleanDef);
     const displayVal = cleanVal || cleanDef;
     return `<span id="${id}" class="${isDefault ? 'pv-field' : ''}">${displayVal}</span>`;
   }
@@ -1546,7 +1564,6 @@ document.addEventListener('DOMContentLoaded', () => {
           p.innerText = obj.descricaoFormatada;
           pvObjetosContainer.appendChild(p);
 
-          // Renderizar parágrafos adicionais de exame se houver
           if (obj.paragrafosAdicionais && obj.paragrafosAdicionais.length > 0) {
             obj.paragrafosAdicionais.forEach(pAdd => {
               const pExtra = document.createElement('p');
@@ -1604,7 +1621,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('pv-total-paginas-extenso').innerText = numeroParaExtenso(totalPaginasCalculado);
     document.getElementById('pv-footer-pagina').innerText = 2;
 
-    document.getElementById('pv-lacre-saida').innerText = laudoState.fechamento.lacreSaida || DEFAULTS.lacreSaida;
+    document.getElementById('pv-lacre-saida').innerHTML = formatSpanField('pv-lacre-saida', laudoState.fechamento.lacreSaida, DEFAULTS.lacreSaida);
     
     // CIDADE E DATA COM VÍRGULA NO FINAL
     let dataElabText = laudoState.fechamento.dataElaboracao || DEFAULTS.dataElaboracao;
@@ -1617,12 +1634,49 @@ document.addEventListener('DOMContentLoaded', () => {
     // NOME E CARGO EM PARÁGRAFOS SEPARADOS
     const elNomePerito = document.getElementById('pv-nome-perito-nome');
     if (elNomePerito) {
-      elNomePerito.innerHTML = `<strong>${laudoState.fechamento.nomePerito || DEFAULTS.nomePerito}</strong>`;
+      elNomePerito.innerHTML = `<strong>${formatSpanField('pv-nome-perito-span', laudoState.fechamento.nomePerito, DEFAULTS.nomePerito)}</strong>`;
     }
     const elCargoPerito = document.getElementById('pv-nome-perito-cargo');
     if (elCargoPerito) {
       elCargoPerito.innerText = `Perito Criminal`;
     }
+  }
+
+  function sanitizeYellowHighlightsBeforeExport() {
+    const pvFields = previewEditableContent.querySelectorAll('.pv-field');
+    pvFields.forEach(el => {
+      const txt = el.innerText.trim();
+      const id = el.id;
+      let def = '';
+      if (id === 'pv-data-designacao') def = DEFAULTS.dataDesignacao;
+      else if (id === 'pv-protocolo') def = DEFAULTS.protocolo;
+      else if (id === 'pv-laudo-num') def = DEFAULTS.laudoNum;
+      else if (id === 'pv-bo-num') def = DEFAULTS.boNum;
+      else if (id === 'pv-del-elaboracao') def = DEFAULTS.delElaboracao;
+      else if (id === 'pv-del-circunscricao') def = DEFAULTS.delCircunscricao;
+      else if (id === 'pv-natureza-exame') def = DEFAULTS.naturezaExame;
+      else if (id === 'pv-lacre-saida') def = DEFAULTS.lacreSaida;
+      else if (id && id.startsWith('pv-lacre-')) def = DEFAULTS.lacreNumero;
+
+      if (def && txt !== def.trim()) {
+        el.classList.remove('pv-field');
+      }
+    });
+  }
+
+  function getExportFileName() {
+    let sufixoObjeto = 'objeto';
+    if (laudoState.objetos && laudoState.objetos.length > 0) {
+      const primeiroObj = laudoState.objetos[0];
+      const raw = primeiroObj.categoriaId || primeiroObj.categoriaNome || 'objeto';
+      const clean = raw.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+      if (clean) sufixoObjeto = clean;
+    }
+    const numClean = (laudoState.preambulo.laudoNum || '000000_2026').replace(/\//g, '_');
+    return `${numClean}$${sufixoObjeto}.docx`;
   }
 
   function cleanString(str) {
@@ -1636,6 +1690,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       btnExportDocx.disabled = true;
       btnExportDocx.innerHTML = '⏳ Gerando Laudo .docx...';
+
+      sanitizeYellowHighlightsBeforeExport();
 
       const docx = window.docx;
       if (!docx) throw new Error('Biblioteca docx.js não carregada');
@@ -1866,7 +1922,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const blob = await Packer.toBlob(doc);
-      const fileName = `${laudoState.preambulo.laudoNum.replace(/\//g, '_') || 'laudo'}$celular.docx`;
+      const fileName = getExportFileName();
 
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);

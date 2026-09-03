@@ -1,5 +1,5 @@
-// Service Worker para Aitem - Aplicação Offline PWA (v4)
-const CACHE_NAME = 'aitem-v4';
+// Service Worker para Aitem - Aplicação Offline PWA (v5)
+const CACHE_NAME = 'aitem-v5';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -17,7 +17,7 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Instalando nova versão v4...');
+  console.log('[Service Worker] Instalando nova versão v5...');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Caching arquivos críticos...');
@@ -27,7 +27,7 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Ativando versão v4...');
+  console.log('[Service Worker] Ativando versão v5...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
