@@ -295,8 +295,11 @@
                 <input type="text" id="editor-cat-icone" placeholder="ex: 🔫 ou 📦">
               </div>
               <div class="form-group full-width">
-                <label for="editor-cat-template">Modelo da Descrição Padronizada (Use chaves para os campos, ex: {marca}, {modelo})</label>
-                <textarea id="editor-cat-template" rows="3" placeholder="ex: 01 (um) objeto periciado de marca {marca}, modelo {modelo}..."></textarea>
+                <label for="editor-cat-template">Modelo da Descrição Padronizada</label>
+                <p class="help-text" style="margin-bottom: 0.3rem;">
+                  Use chaves <code>{campo}</code> para os valores. Para trechos condicionais que só aparecem se o campo tiver conteúdo, use colchetes: <code>[?campo: texto com {campo}]</code> (Ex: <code>[?etiqueta:; ostentando etiqueta interna {etiqueta}]</code>).
+                </p>
+                <textarea id="editor-cat-template" rows="3" placeholder="ex: 01 (um) objeto periciado de marca {marca}, modelo {modelo}[?etiqueta:; ostentando etiqueta {etiqueta}]..."></textarea>
               </div>
             </div>
 

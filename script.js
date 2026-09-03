@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Word 2016 OpenXML Schema Compliant Footer, Reduced Title Spacing, and 1.0 Signature Line Spacing
+// Main Application Script with Word 2016 OpenXML Schema Compliant Footer and Conditional Template Blocks [?campo: texto {campo}]
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -560,17 +560,37 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
   });
 
+  // ==========================================
+  // CONSTRUTOR DE DESCRIÇÃO COM BLOCOS CONDICIONAIS [?campo: texto {campo}]
+  // ==========================================
   function buildFormattedDescription(template, campoValues) {
     let desc = template || '';
 
+    // 1. Processar blocos condicionais explícitos: [?campo: texto com {campo}] ou [se:campo: texto] ou [campo? texto]
+    const blockRegex = /\[\s*(?:\?|se:)?\s*([a-zA-Z0-9_]+)\s*[:\?]\s*([^\]]+)\]/gi;
+
+    desc = desc.replace(blockRegex, (fullMatch, key, blockContent) => {
+      const val = (campoValues[key] || '').trim();
+      if (val && val !== '[Omitir]') {
+        return blockContent.replace(new RegExp(`\\{${key}\\}`, 'g'), val);
+      } else {
+        return '';
+      }
+    });
+
+    // 2. Fallbacks de retrocompatibilidade para placeholders padrão {key}
     if (campoValues.imei2 && campoValues.imei2.trim() && campoValues.imei2.trim() !== '[Omitir]') {
-      desc = desc.replace('{imei2}', ` e IMEI 2: ${campoValues.imei2.trim()}`);
+      if (!desc.includes(campoValues.imei2.trim())) {
+        desc = desc.replace('{imei2}', ` e IMEI 2: ${campoValues.imei2.trim()}`);
+      }
     } else {
       desc = desc.replace('{imei2}', '');
     }
 
     if (campoValues.sn && campoValues.sn.trim() && campoValues.sn.trim() !== '[Omitir]') {
-      desc = desc.replace('{sn}', `, S/N: ${campoValues.sn.trim()}`);
+      if (!desc.includes(campoValues.sn.trim())) {
+        desc = desc.replace('{sn}', `, S/N: ${campoValues.sn.trim()}`);
+      }
     } else {
       desc = desc.replace('{sn}', '');
     }
@@ -588,6 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // 3. Sanitização final de pontuação dupla e espaços excedentes
     desc = desc.replace(/\{[a-zA-Z0-9_]+\}/g, '')
                .replace(/;\s*;/g, ';')
                .replace(/;\s*\./g, '.')
@@ -597,13 +618,17 @@ document.addEventListener('DOMContentLoaded', () => {
                .replace(/\s+;/g, ';');
 
     if (campoValues.sim_cards && campoValues.sim_cards.trim() && campoValues.sim_cards.trim() !== '[Omitir]') {
-      desc += ` Anexo ao aparelho havia ${campoValues.sim_cards.trim()}.`;
+      if (!desc.includes(campoValues.sim_cards.trim())) {
+        desc += ` Anexo ao aparelho havia ${campoValues.sim_cards.trim()}.`;
+      }
     }
     if (campoValues.cartao_memoria && campoValues.cartao_memoria.trim() && campoValues.cartao_memoria.trim() !== '[Omitir]') {
-      desc += ` Continha cartão de memória ${campoValues.cartao_memoria.trim()}.`;
+      if (!desc.includes(campoValues.cartao_memoria.trim())) {
+        desc += ` Continha cartão de memória ${campoValues.cartao_memoria.trim()}.`;
+      }
     }
 
-    return desc;
+    return desc.trim();
   }
 
   // ==========================================
@@ -731,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
     compendioEditorTitle.innerText = '➕ Criar Novo Modelo de Objeto no Compêndio';
     editorCatNome.value = '';
     editorCatIcone.value = '📦';
-    editorCatTemplate.value = '01 (um) objeto periciado de marca {marca}, modelo {modelo}.';
+    editorCatTemplate.value = '01 (um) objeto periciado de marca {marca}, modelo {modelo}[?etiqueta:; ostentando etiqueta {etiqueta}].';
     
     renderCamposBuilder([
       { id: 'marca', label: 'Marca', tipo: 'text', placeholder: 'ex: Samsung' },
@@ -1682,7 +1707,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX (ESPAÇAMENTO 1,0 PARA LINHAS DE ASSINATURA E ESPAÇAMENTO DE TÍTULO REDUZIDO)
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -1727,7 +1752,7 @@ document.addEventListener('DOMContentLoaded', () => {
               docParagraphs.push(
                 new Paragraph({
                   alignment: AlignmentType.LEFT,
-                  spacing: { before: 180, after: 80 }, // Espaçamento reduzido dos títulos (9pt antes, 4pt depois)
+                  spacing: { before: 180, after: 80 },
                   children: [new TextRun({ text: hText, bold: true, font: "Arial", size: 24 })]
                 })
               );
@@ -1785,8 +1810,6 @@ document.addEventListener('DOMContentLoaded', () => {
             parseParagraphChildNodes(child);
 
             if (textRuns.length > 0) {
-              // Linhas de assinatura/data à direita (isRight): espaçamento entre linhas 1,0 (line: 240) e space after: 0
-              // Parágrafos normais do corpo (text-justify): espaçamento entre linhas 1,5 (line: 360) e space after: 200
               docParagraphs.push(
                 new Paragraph({
                   alignment: isRight ? AlignmentType.RIGHT : alignJustified,
@@ -1845,7 +1868,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       processElementTree(previewEditableContent);
 
-      // TABELA DE RODAPÉ 100% COMPATÍVEL COM ESQUEMA WORD 2016
       const cell1Children = [];
       if (rodapeBuffer) {
         cell1Children.push(
