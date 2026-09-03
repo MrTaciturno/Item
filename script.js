@@ -1,5 +1,5 @@
 // Aitem - Sistema de Elaboração e Automação de Laudos Periciais
-// Main Application Script with Dynamic Access Date, Custom Model Defaults, DOCX Yellow Highlights, and Object Filename Generator
+// Main Application Script with Word 2016 OpenXML Schema Compliant Footer & Header
 
 document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
@@ -1684,7 +1684,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // EXPORTAÇÃO PARA ARQUIVO .DOCX
+  // EXPORTAÇÃO PARA ARQUIVO .DOCX (COMPATÍVEL COM WORD 2016)
   // ==========================================
   btnExportDocx.addEventListener('click', async () => {
     try {
@@ -1845,8 +1845,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
       processElementTree(previewEditableContent);
 
+      // TABELA DE RODAPÉ 100% COMPATÍVEL COM ESQUEMA WORD 2016
+      const cell1Children = [];
+      if (rodapeBuffer) {
+        cell1Children.push(
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+              new ImageRun({
+                data: rodapeBuffer,
+                transformation: { width: 480, height: 26 }
+              })
+            ]
+          })
+        );
+      } else {
+        cell1Children.push(new Paragraph({ alignment: AlignmentType.CENTER }));
+      }
+
       const footerTable = new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
+        width: { size: 5000, type: WidthType.PERCENTAGE }, // 5000 = 100% no OpenXML
+        columnWidths: [4250, 750], // 85% e 15%
         borders: {
           top: { style: BorderStyle.NONE, size: 0, color: "auto" },
           bottom: { style: BorderStyle.NONE, size: 0, color: "auto" },
@@ -1859,21 +1878,11 @@ document.addEventListener('DOMContentLoaded', () => {
           new TableRow({
             children: [
               new TableCell({
-                width: { size: 85, type: WidthType.PERCENTAGE },
-                children: rodapeBuffer ? [
-                  new Paragraph({
-                    alignment: AlignmentType.CENTER,
-                    children: [
-                      new ImageRun({
-                        data: rodapeBuffer,
-                        transformation: { width: 480, height: 26 }
-                      })
-                    ]
-                  })
-                ] : []
+                width: { size: 4250, type: WidthType.PERCENTAGE },
+                children: cell1Children
               }),
               new TableCell({
-                width: { size: 15, type: WidthType.PERCENTAGE },
+                width: { size: 750, type: WidthType.PERCENTAGE },
                 children: [
                   new Paragraph({
                     alignment: AlignmentType.RIGHT,
@@ -1909,7 +1918,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     })
                   ]
                 })
-              ] : []
+              ] : [new Paragraph({})]
             })
           },
           footers: {
