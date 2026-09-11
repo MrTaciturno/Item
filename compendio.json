@@ -4,27 +4,83 @@
       "id": "smartphone",
       "nome": "Aparelho Celular (Smartphone)",
       "icone": "📱",
-      "modelo_descricao": "01 (um) aparelho móvel de comunicação (smartphone) de marca de fabricação {marca}, modelo {modelo}, de cor {cor}; IMEIs: {imei1}{imei2}{sn}. Apresentava estado de conservação {estado_cons} e estado operacional {estado_op}, e no momento do exame encontrava-se {estado_bloqueio}.",
+      "modelo_descricao": "01 (um) aparelho móvel de comunicação (smartphone) de marca de fabricação {marca}, [?modelo: modelo {modelo}, ]de cor {cor}; [?imei1: IMEI1 {imei1}, ][?imei2: IMEI2 {imei2}, ][?sn: Número de Série {sn}, ]. Estado de conservação {estado_cons}, e estado operacional {estado_op}[?estado_bloqueio: , {estado_bloqueio}]. [?sim_cards: Acompanhava o aparelho  {sim_cards}] [?cartao_memoria: e cartão de memória {cartao_memoria}].",
       "campos": [
-        { "id": "marca", "label": "Marca de Fabricação", "tipo": "text", "placeholder": "ex: Apple, Samsung, Motorola" },
-        { "id": "modelo", "label": "Modelo", "tipo": "text", "placeholder": "ex: iPhone 11, Moto G8" },
-        { "id": "cor", "label": "Cor Predominante", "tipo": "text", "placeholder": "ex: preta, prateada" },
-        { "id": "imei1", "label": "IMEI 1", "tipo": "text", "placeholder": "15 dígitos" },
-        { "id": "imei2", "label": "IMEI 2", "tipo": "text", "placeholder": "15 dígitos (opcional)" },
-        { "id": "sn", "label": "Número de Série (S/N)", "tipo": "text", "placeholder": "opcional" },
-        { "id": "sim_cards", "label": "Cartão(ões) SIM (Chip)", "tipo": "text", "placeholder": "ex: 01 chip da operadora Claro" },
-        { "id": "cartao_memoria", "label": "Cartão de Memória", "tipo": "text", "placeholder": "ex: MicroSD de 32GB" },
-        { "id": "estado_cons", "label": "Estado de Conservação", "tipo": "select", "opcoes": ["bom", "regular", "apresentando danos físicos", "fragmentado"] },
-        { "id": "estado_op", "label": "Estado Operacional", "tipo": "select", "opcoes": ["operante", "não apresentou funcionamento", "parcialmente operante"] },
-        { "id": "estado_bloqueio", "label": "Estado de Bloqueio", "tipo": "select", "opcoes": ["bloqueado por senha", "desbloqueado", "sem sistema operacional"] }
-      ],
-      "paragrafos_adicionais": [
         {
-          "id": "res_funcional",
-          "titulo": "Resultado do Exame Funcional",
-          "texto_padrao": "Submetido a testes de funcionamento no setor de perícias, o aparelho ligou e respondeu aos comandos de toque em tela, demonstrando plena funcionalidade."
+          "id": "marca",
+          "label": "Marca de Fabricação",
+          "tipo": "text"
+        },
+        {
+          "id": "modelo",
+          "label": "Modelo",
+          "tipo": "text"
+        },
+        {
+          "id": "cor",
+          "label": "Cor Predominante",
+          "tipo": "text"
+        },
+        {
+          "id": "imei1",
+          "label": "IMEI 1",
+          "tipo": "text"
+        },
+        {
+          "id": "imei2",
+          "label": "IMEI 2",
+          "tipo": "text"
+        },
+        {
+          "id": "sn",
+          "label": "Número de Série (S/N)",
+          "tipo": "text"
+        },
+        {
+          "id": "sim_cards",
+          "label": "Cartão(ões) SIM (Chip)",
+          "tipo": "text"
+        },
+        {
+          "id": "cartao_memoria",
+          "label": "Cartão de Memória",
+          "tipo": "text"
+        },
+        {
+          "id": "estado_cons",
+          "label": "Estado de Conservação",
+          "tipo": "select",
+          "opcoes": [
+            "bom",
+            "regular",
+            "aquém do regular",
+            "deteriorado",
+            "fragmentado",
+            "danificado"
+          ]
+        },
+        {
+          "id": "estado_op",
+          "label": "Estado Operacional",
+          "tipo": "select",
+          "opcoes": [
+            "funcional",
+            "não funcional",
+            "parcialmente funcional"
+          ]
+        },
+        {
+          "id": "estado_bloqueio",
+          "label": "Estado de Bloqueio",
+          "tipo": "select",
+          "opcoes": [
+            "bloqueado por senha",
+            "desbloqueado",
+            "sem sistema operacional"
+          ]
         }
-      ]
+      ],
+      "paragrafos_adicionais": []
     },
     {
       "id": "mini_celular",
@@ -32,60 +88,963 @@
       "icone": "📱",
       "modelo_descricao": "01 (um) mini celular de marca de fabricação {marca}, modelo {modelo}, de cor {cor}; IMEI: {imei1}{imei2}{sn}. Apresentava estado de conservação {estado_cons} e estado operacional {estado_op}, e encontrava-se {estado_bloqueio}.",
       "campos": [
-        { "id": "marca", "label": "Marca de Fabricação", "tipo": "text", "placeholder": "ex: L8star, Decwin, BM10" },
-        { "id": "modelo", "label": "Modelo", "tipo": "text", "placeholder": "ex: BM10, BM70" },
-        { "id": "cor", "label": "Cor Predominante", "tipo": "text", "placeholder": "ex: preta, azul" },
-        { "id": "imei1", "label": "IMEI 1", "tipo": "text", "placeholder": "15 dígitos" },
-        { "id": "imei2", "label": "IMEI 2", "tipo": "text", "placeholder": "15 dígitos (opcional)" },
-        { "id": "sn", "label": "Número de Série", "tipo": "text", "placeholder": "opcional" },
-        { "id": "sim_cards", "label": "Cartão SIM (Chip)", "tipo": "text", "placeholder": "ex: 01 nano SIM" },
-        { "id": "cartao_memoria", "label": "Cartão de Memória", "tipo": "text", "placeholder": "ex: MicroSD 16GB" },
-        { "id": "estado_cons", "label": "Estado de Conservação", "tipo": "select", "opcoes": ["bom", "regular", "com avarias"] },
-        { "id": "estado_op", "label": "Estado Operacional", "tipo": "select", "opcoes": ["operante", "não apresentou funcionamento"] },
-        { "id": "estado_bloqueio", "label": "Estado de Bloqueio", "tipo": "select", "opcoes": ["desbloqueado", "bloqueado por código"] }
+        {
+          "id": "marca",
+          "label": "Marca de Fabricação",
+          "tipo": "text",
+          "placeholder": "ex: L8star, Decwin, BM10"
+        },
+        {
+          "id": "modelo",
+          "label": "Modelo",
+          "tipo": "text",
+          "placeholder": "ex: BM10, BM70"
+        },
+        {
+          "id": "cor",
+          "label": "Cor Predominante",
+          "tipo": "text",
+          "placeholder": "ex: preta, azul"
+        },
+        {
+          "id": "imei1",
+          "label": "IMEI 1",
+          "tipo": "text",
+          "placeholder": "15 dígitos"
+        },
+        {
+          "id": "imei2",
+          "label": "IMEI 2",
+          "tipo": "text",
+          "placeholder": "15 dígitos (opcional)"
+        },
+        {
+          "id": "sn",
+          "label": "Número de Série",
+          "tipo": "text",
+          "placeholder": "opcional"
+        },
+        {
+          "id": "sim_cards",
+          "label": "Cartão SIM (Chip)",
+          "tipo": "text",
+          "placeholder": "ex: 01 nano SIM"
+        },
+        {
+          "id": "cartao_memoria",
+          "label": "Cartão de Memória",
+          "tipo": "text",
+          "placeholder": "ex: MicroSD 16GB"
+        },
+        {
+          "id": "estado_cons",
+          "label": "Estado de Conservação",
+          "tipo": "select",
+          "opcoes": [
+            "bom",
+            "regular",
+            "com avarias"
+          ]
+        },
+        {
+          "id": "estado_op",
+          "label": "Estado Operacional",
+          "tipo": "select",
+          "opcoes": [
+            "operante",
+            "não apresentou funcionamento"
+          ]
+        },
+        {
+          "id": "estado_bloqueio",
+          "label": "Estado de Bloqueio",
+          "tipo": "select",
+          "opcoes": [
+            "desbloqueado",
+            "bloqueado por código"
+          ]
+        }
       ],
       "paragrafos_adicionais": []
     },
     {
-      "id": "substancia_entorpecente",
-      "nome": "Substância Entorpecente / Droga",
-      "icone": "🌿",
-      "modelo_descricao": "01 (uma) porção de substância vegetal {aspecto}, apresentando massa bruta de {massa} gramas, acondicionada em {embalagem}.",
+      "id": "cat_1788404173918",
+      "nome": "Placa Mercosul",
+      "icone": "🎫",
+      "modelo_descricao": "01 (uma) placa de identificação veicular padrão Mercosul; de veículo particular; em metal; {usada} {sujidades}; em estado de conservação {conservacao}; de código alfanumérico {placa}; medindo 13,0 x 40,0 centímetros; ostentando faixa azul na parte superior, com inscrição “BRASIL” na região superior central, com emblema do Mercosul no canto superior esquerdo e com bandeira do Brasil no canto superior direito; de borda de cor preta; com inscrição “BR” no canto inferior esquerdo; com QR Code abaixo do emblema do Mercosul.",
       "campos": [
-        { "id": "aspecto", "label": "Aspecto / Coloração", "tipo": "text", "placeholder": "ex: esverdeada e dessecada (prensa)" },
-        { "id": "massa", "label": "Massa Bruta (gramas)", "tipo": "text", "placeholder": "ex: 15,40" },
-        { "id": "embalagem", "label": "Embalagem", "tipo": "text", "placeholder": "ex: invólucro plástico transparente" }
+        {
+          "id": "usada",
+          "label": "Nova / Usada",
+          "tipo": "select",
+          "opcoes": [
+            "nova",
+            "usada"
+          ]
+        },
+        {
+          "id": "sujidades",
+          "label": "Sujidades",
+          "tipo": "text"
+        },
+        {
+          "id": "conservacao",
+          "label": "Conservação",
+          "tipo": "select",
+          "opcoes": [
+            "bom",
+            "regular",
+            "deteriorado"
+          ]
+        },
+        {
+          "id": "placa",
+          "label": "Placa",
+          "tipo": "text"
+        }
       ],
       "paragrafos_adicionais": [
         {
-          "id": "res_thc",
-          "titulo": "Resultado Positivo para THC (Maconha)",
-          "texto_padrao": "Submetido aos exames químico-toxicológicos de coloração e cromatografia em camada delgada, a amostra resultou POSITIVA para a presença de Tetrahidrocanabinol (THC), princípio ativo característico da espécie Cannabis sativa L."
-        },
-        {
-          "id": "res_cocaina",
-          "titulo": "Resultado Positivo para Cocaína",
-          "texto_padrao": "Submetido aos exames de reação de Scott e cromatografia em camada delgada, a amostragem resultou POSITIVA para a presença de Cocaína."
+          "id": "VIO_Nãoleu",
+          "titulo": "Exame VIO - Sem leitura",
+          "texto_padrao": "O aplicativo VIO (responsável pela leitura do QR Code e pelo fornecimento um número de série emitido pelo Denatran e relacionado ao veículo ao qual a placa pertence) foi utilizado, não retornando leitura, ensejando irregularidade."
         }
       ]
     },
     {
-      "id": "amostra_biologica",
-      "nome": "Amostra Biológica / Vestígio de Sangue",
-      "icone": "🩸",
-      "modelo_descricao": "01 (uma) amostra de suporte {suporte} contendo mancha de aspecto {aspecto}, arrecadada em {local_coleta}.",
+      "id": "cat_1788405917142",
+      "nome": "Pedaço de Madeira",
+      "icone": "🥢",
+      "modelo_descricao": "01 (um) objeto de madeira ({tipo_obj}); estado de conservação {conserv}; comprimento {comp} cm, largura máxima {larg} cm; massa {massa} g;",
       "campos": [
-        { "id": "suporte", "label": "Suporte / Material", "tipo": "text", "placeholder": "ex: tecido de algodão, gaze estéril" },
-        { "id": "aspecto", "label": "Aspecto da Mancha", "tipo": "text", "placeholder": "ex: pardo-avermelhado" },
-        { "id": "local_coleta", "label": "Local da Coleta", "tipo": "text", "placeholder": "ex: porção frontal do vestuário" }
+        {
+          "id": "tipo_obj",
+          "label": "Tipo de Objeto",
+          "tipo": "text"
+        },
+        {
+          "id": "marca",
+          "label": "Marca",
+          "tipo": "text"
+        },
+        {
+          "id": "conserv",
+          "label": "Conservação",
+          "tipo": "select",
+          "opcoes": [
+            "bom",
+            "regular",
+            "deteriorado"
+          ]
+        },
+        {
+          "id": "comp",
+          "label": "Comprimento (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "larg",
+          "label": "Largura (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "massa",
+          "label": "Massa",
+          "tipo": "text"
+        }
       ],
       "paragrafos_adicionais": [
         {
-          "id": "res_sangue_humano",
-          "titulo": "Resultado Positivo para Sangue Humano",
-          "texto_padrao": "Submetida a ensaios imunocromatográficos específicos para hemoglobina humana, a amostra resultou POSITIVA para a presença de sangue humano."
+          "id": "potencialLesivo",
+          "titulo": "Potencial Lesivo",
+          "texto_padrao": "O objeto descrito tinha condição de ser utilizado para causar ferimentos no combate a curta distância e poderia ser utilizado como instrumento de intimidação (ameaça)."
         }
       ]
+    },
+    {
+      "id": "cat_1788406626646",
+      "nome": "Jaqueta",
+      "icone": "🧥",
+      "modelo_descricao": "01 (uma) jaqueta de {material}, marca {marca}, modelo {modelo}, cor predominante {cor}, tamanho {tam}; {usada}{suj}{danos}.",
+      "campos": [
+        {
+          "id": "material",
+          "label": "Material",
+          "tipo": "text"
+        },
+        {
+          "id": "marca",
+          "label": "Marca",
+          "tipo": "text"
+        },
+        {
+          "id": "modelo",
+          "label": "Modelo",
+          "tipo": "text"
+        },
+        {
+          "id": "usada",
+          "label": "Usada?",
+          "tipo": "select",
+          "opcoes": [
+            "nova;",
+            "usada;"
+          ]
+        },
+        {
+          "id": "suj",
+          "label": "Sujidades",
+          "tipo": "text"
+        },
+        {
+          "id": "danos",
+          "label": "Danos",
+          "tipo": "text"
+        },
+        {
+          "id": "cor",
+          "label": "Cor predominante",
+          "tipo": "text"
+        },
+        {
+          "id": "tam",
+          "label": "Tamanho",
+          "tipo": "text"
+        }
+      ],
+      "paragrafos_adicionais": []
+    },
+    {
+      "id": "cat_1788412348311",
+      "nome": "Genérico",
+      "icone": "📦",
+      "modelo_descricao": "01 (um) {tipo}, de marca/modelo {marca_mod}, {demais}.",
+      "campos": [
+        {
+          "id": "tipo",
+          "label": "Tipo",
+          "tipo": "text"
+        },
+        {
+          "id": "marca_mod",
+          "label": "Marca/Modelo",
+          "tipo": "text"
+        },
+        {
+          "id": "demais",
+          "label": "demais",
+          "tipo": "text"
+        }
+      ],
+      "paragrafos_adicionais": []
+    },
+    {
+      "id": "cat_1788954521041",
+      "nome": "Alicate",
+      "icone": "⚒",
+      "modelo_descricao": "01 (um) alicate {tipo}; marca de fabricação {marca} [?modelo: , modelo {modelo}]; {usado}; de cabo revestido por material {cabo} de cor {corcabo}; de comprimento total de {total_cm}cm; de largura máxima de {largura_cm}cm, [?massa:, massa {massa}g].",
+      "campos": [
+        {
+          "id": "tipo",
+          "label": "Tipo",
+          "tipo": "text"
+        },
+        {
+          "id": "marca",
+          "label": "Marca",
+          "tipo": "text"
+        },
+        {
+          "id": "usado",
+          "label": "Usado/Novo/Conservação",
+          "tipo": "select",
+          "opcoes": [
+            "novo",
+            "usado e em bom estado",
+            "usado e em estado regular de conservação",
+            "usado e deteriorado"
+          ]
+        },
+        {
+          "id": "modelo",
+          "label": "Modelo",
+          "tipo": "text"
+        },
+        {
+          "id": "cabo",
+          "label": "Material Cabo",
+          "tipo": "text"
+        },
+        {
+          "id": "corcabo",
+          "label": "Cor do cabo",
+          "tipo": "text"
+        },
+        {
+          "id": "total_cm",
+          "label": "Comprimento Total (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "largura_cm",
+          "label": "Largura (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "massa",
+          "label": "Massa",
+          "tipo": "text"
+        }
+      ],
+      "paragrafos_adicionais": [
+        {
+          "id": "Potencial",
+          "titulo": "Potencial",
+          "texto_padrao": "Objeto poderia ser utilizado para pegar, apertar, segurar, cortar, podendo ser empregado para prática de furtos, a depender da habilidade/força do usuário."
+        }
+      ]
+    },
+    {
+      "id": "cat_1788954534113",
+      "nome": "Chave (ferramenta)",
+      "icone": "🍡",
+      "modelo_descricao": "01 (uma) ferramenta do tipo chave {tipo}; marca de fabricação {marca} [?modelo: , modelo {modelo}]; {usado}; de cabo revestido por material {cabo} de cor {corcabo}; de comprimento total de {total_cm}cm; de largura máxima de {largura_cm}cm, [?massa:, massa {massa}g].",
+      "campos": [
+        {
+          "id": "tipo",
+          "label": "Tipo",
+          "tipo": "text"
+        },
+        {
+          "id": "marca",
+          "label": "Marca",
+          "tipo": "text"
+        },
+        {
+          "id": "usado",
+          "label": "Usado/Novo/Conservação",
+          "tipo": "select",
+          "opcoes": [
+            "novo",
+            "usado e em bom estado",
+            "usado e em estado regular de conservação",
+            "usado e deteriorado"
+          ]
+        },
+        {
+          "id": "modelo",
+          "label": "Modelo",
+          "tipo": "text"
+        },
+        {
+          "id": "cabo",
+          "label": "Material Cabo",
+          "tipo": "text"
+        },
+        {
+          "id": "corcabo",
+          "label": "Cor do cabo",
+          "tipo": "text"
+        },
+        {
+          "id": "total_cm",
+          "label": "Comprimento Total (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "massa",
+          "label": "Massa",
+          "tipo": "text"
+        }
+      ],
+      "paragrafos_adicionais": [
+        {
+          "id": "Potencial",
+          "titulo": "Potencial",
+          "texto_padrao": "Objeto poderia ser utilizado para aparafusar e desaparafusar, perfurar ou ainda na forma de alavanca, podendo ser empregado para prática de furtos, a depender da habilidade/força do usuário."
+        }
+      ]
+    },
+    {
+      "id": "faca",
+      "nome": "Faca",
+      "icone": "🔪",
+      "modelo_descricao": "01 (uma) faca {tipo}; {usado}; marca {marca} [?modelo: , modelo {modelo};] {tipoLamina} de cabo {cabo} [?caboCor: na cor {caboCor};] comprimento total de {total_cm}cm com largura máxima de {laminaLargura}cm [?massa:  ;de massa {massa}g]. [?danos: Apresentava danos que consistiam em {danos}.] [?sujidades: Apresentava sujidades {sujidades}.]",
+      "campos": [
+        {
+          "id": "marca",
+          "label": "Marca",
+          "tipo": "text"
+        },
+        {
+          "id": "modelo",
+          "label": "Modelo",
+          "tipo": "text"
+        },
+        {
+          "id": "tipo",
+          "label": "Tipo",
+          "tipo": "text"
+        },
+        {
+          "id": "cabo",
+          "label": "Material Cabo",
+          "tipo": "select",
+          "opcoes": [
+            "de madeira",
+            "de plástico",
+            "emborrachado",
+            "de material sintético",
+            "em polímero"
+          ]
+        },
+        {
+          "id": "total_cm",
+          "label": "Tamanho Total (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "lamina_cm",
+          "label": "Tamanho Lâmina (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "usado",
+          "label": "Novo/Usado/Conservação",
+          "tipo": "select",
+          "opcoes": [
+            "nova;",
+            "usada e em bom estado de conservação;",
+            "usada e em regular estado de conservação;",
+            "usada e em estado de conservação deteriado;"
+          ]
+        },
+        {
+          "id": "tipoLamina",
+          "label": "Tipo de Lâmina",
+          "tipo": "select",
+          "opcoes": [
+            "com lâmina pontiaguda e de gume afiado;",
+            "com lâmina pontiaguda e de gume serrilhado;",
+            "com ponta romba e de gume afiado;"
+          ]
+        },
+        {
+          "id": "caboCor",
+          "label": "Cor do Cabo",
+          "tipo": "text"
+        },
+        {
+          "id": "laminaLargura",
+          "label": "Largura da Lâmina (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "massa",
+          "label": "Massa (g)",
+          "tipo": "text"
+        },
+        {
+          "id": "danos",
+          "label": "Danos",
+          "tipo": "text"
+        },
+        {
+          "id": "sujidades",
+          "label": "Sujidades",
+          "tipo": "text"
+        }
+      ],
+      "paragrafos_adicionais": [
+        {
+          "id": "Potencial Lesivo",
+          "titulo": "Potencial Lesivo",
+          "texto_padrao": "A faca, por constituir-se essencialmente de lâmina metálica, tinha condições de produzir ferimentos no combate a curta distância e na luta corpo a corpo e poderia ser utilizada como instrumento de intimidação (ameaça)."
+        },
+        {
+          "id": "Fecacult Positivo",
+          "titulo": "FecaCult Positivo",
+          "texto_padrao": "A superfície da lâmina da faca foi submetida ao ensaio imunocromatográfico Feca Cult One Step, para a determinação qualitativa de hemoglobina humana, que resultou positivo."
+        },
+        {
+          "id": "Fecacult Negativo",
+          "titulo": "FecaCult Negativo",
+          "texto_padrao": "A superfície da lâmina da faca foi submetida ao ensaio imunocromatográfico Feca Cult One Step, para a determinação qualitativa de hemoglobina humana, que resultou negativo."
+        },
+        {
+          "id": "Acompanha Bainha",
+          "titulo": "Bainha",
+          "texto_padrao": "Acompanha bainha compatível."
+        }
+      ]
+    },
+    {
+      "id": "geral",
+      "nome": "Geral",
+      "icone": "🎁",
+      "modelo_descricao": "01 (um) {tipo}; {usado}; marca {marca} [?modelo: , modelo {modelo};] [?tipoLamina: {tipoLamina};] [?cabo: cabo {cabo};] [?caboCor: na cor {caboCor};] [?total_cm: comprimento total {total_cm}cm;], [?lamina_cm: comprimento da lâmina {lamina_cm}cm;] [?laminaLargura: e largura {larguraLamina}cm;] [?massa:  ;de massa {massa}g]. [?danos: Apresentava danos que consistiam em {danos}.] [?sujidades: Apresentava sujidades {sujidades}.]",
+      "campos": [
+        {
+          "id": "tipo",
+          "label": "Tipo",
+          "tipo": "text"
+        },
+        {
+          "id": "marca",
+          "label": "Marca",
+          "tipo": "text"
+        },
+        {
+          "id": "modelo",
+          "label": "Modelo",
+          "tipo": "text"
+        },
+        {
+          "id": "cabo",
+          "label": "Material Cabo",
+          "tipo": "select",
+          "opcoes": [
+            "de madeira",
+            "de plástico",
+            "emborrachado",
+            "de material sintético",
+            "em polímero"
+          ]
+        },
+        {
+          "id": "total_cm",
+          "label": "Tamanho Total (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "lamina_cm",
+          "label": "Tamanho Lâmina (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "usado",
+          "label": "Novo/Usado/Conservação",
+          "tipo": "select",
+          "opcoes": [
+            "nova;",
+            "usada e em bom estado de conservação;",
+            "usada e em regular estado de conservação;",
+            "usada e em estado de conservação deteriado;"
+          ]
+        },
+        {
+          "id": "tipoLamina",
+          "label": "Tipo de Lâmina",
+          "tipo": "select",
+          "opcoes": [
+            "com lâmina pontiaguda e de gume afiado;",
+            "com lâmina pontiaguda e de gume serrilhado;",
+            "com ponta romba e de gume afiado;"
+          ]
+        },
+        {
+          "id": "caboCor",
+          "label": "Cor do Cabo",
+          "tipo": "text"
+        },
+        {
+          "id": "laminaLargura",
+          "label": "Largura da Lâmina (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "massa",
+          "label": "Massa (g)",
+          "tipo": "text"
+        },
+        {
+          "id": "danos",
+          "label": "Danos",
+          "tipo": "text"
+        },
+        {
+          "id": "sujidades",
+          "label": "Sujidades",
+          "tipo": "text"
+        }
+      ],
+      "paragrafos_adicionais": [
+        {
+          "id": "Potencial Lesivo",
+          "titulo": "Potencial Lesivo",
+          "texto_padrao": "A faca, por constituir-se essencialmente de lâmina metálica, tinha condições de produzir ferimentos no combate a curta distância e na luta corpo a corpo e poderia ser utilizada como instrumento de intimidação (ameaça)."
+        },
+        {
+          "id": "Fecacult Positivo",
+          "titulo": "FecaCult Positivo",
+          "texto_padrao": "A superfície da lâmina da faca foi submetida ao ensaio imunocromatográfico Feca Cult One Step, para a determinação qualitativa de hemoglobina humana, que resultou positivo."
+        },
+        {
+          "id": "Fecacult Negativo",
+          "titulo": "FecaCult Negativo",
+          "texto_padrao": "A superfície da lâmina da faca foi submetida ao ensaio imunocromatográfico Feca Cult One Step, para a determinação qualitativa de hemoglobina humana, que resultou negativo."
+        }
+      ]
+    },
+    {
+      "id": "cedula",
+      "nome": "Cédula (dinheiro)",
+      "icone": "💸",
+      "modelo_descricao": "01 (uma) cédula; [?valor: de valor {valor};] [?cod: de código {cod};] de dimensões altura cm x largura cm.",
+      "campos": [
+        {
+          "id": "valor",
+          "label": "Valor e moeda",
+          "tipo": "text"
+        },
+        {
+          "id": "cod",
+          "label": "Código",
+          "tipo": "text"
+        },
+        {
+          "id": "altura",
+          "label": "Altura (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "largura",
+          "label": "Largura (cm)",
+          "tipo": "text"
+        }
+      ],
+      "paragrafos_adicionais": [
+        {
+          "id": "Nota falsa",
+          "titulo": "Nota falsa",
+          "texto_padrao": "A cédula não apresentava elementos de segurança vigentes, recomendando-se exame específico para autenticidade."
+        }
+      ]
+    },
+    {
+      "id": "folha",
+      "nome": "Folha de papel (avulsa)",
+      "icone": "📓",
+      "modelo_descricao": "01 (uma) folha de papel avulsa, pautada, [?marca: de marca {marca},] [?sujidades: apresentando sujidades,] de dimensões {alt}cm x {larg} cm[?verso: ; verso em branco].",
+      "campos": [
+        {
+          "id": "marca",
+          "label": "Marca",
+          "tipo": "text"
+        },
+        {
+          "id": "pautada",
+          "label": "Pautada?",
+          "tipo": "select",
+          "opcoes": [
+            "pautada",
+            "lisa",
+            "desenhada"
+          ]
+        },
+        {
+          "id": "sujidades",
+          "label": "Sujidades",
+          "tipo": "select",
+          "opcoes": [
+            "sim"
+          ]
+        },
+        {
+          "id": "alt",
+          "label": "Altura (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "larg",
+          "label": "Largura (cm)",
+          "tipo": "text"
+        },
+        {
+          "id": "verso",
+          "label": "Verso em branco?",
+          "tipo": "select",
+          "opcoes": [
+            "sim"
+          ]
+        }
+      ],
+      "paragrafos_adicionais": [
+        {
+          "id": "Texto1",
+          "titulo": "Textos Geral",
+          "texto_padrao": "Continha anotações à manuscritas de sinais alfabéticos, alfanuméricos e matemáticas simples, legíveis, verso em branco, conforme fotografias."
+        },
+        {
+          "id": "Texto2",
+          "titulo": "Textos Lista",
+          "texto_padrao": "Continha anotações à manuscritas de listagem de nomes/alcunhas."
+        },
+        {
+          "id": "Interpretação",
+          "titulo": "Interpretação",
+          "texto_padrao": "Consigna-se que a investigação, interpretação e contextualização do conteúdo competem à autoridade requisitante a qual, juntamente com sua equipe, se manifestarão oportunamente quanto à relevância destes elementos para o procedimento instaurado, bem como eventuais relações com os fatos e suas circunstâncias."
+        }
+      ]
+    },
+    {
+      "id": "balanca_cozinha",
+      "nome": "Balança de Cozinha",
+      "icone": "⚖",
+      "modelo_descricao": "01 (uma) balança digital de cozinha; [?usada: {usada},] [?suj: {suj},] [?conserv: {conserv},] [?marca: marca de fabricação {marca},] [?modelo: modelo {modelo},] [?cor: cor {cor},] de estrutura e de prato circular em material sintético; de capacidade nominal de 10Kg; de dimensões de 23,5 cm x 16,5 cm x 3,8 cm; de funcionamento através de duas pilhas de AA [?funcionamento: ; e o teste de funcionamento resultou {funcionamento}].",
+      "campos": [
+        {
+          "id": "usada",
+          "label": "Usada",
+          "tipo": "select",
+          "opcoes": [
+            "usada",
+            "nova"
+          ]
+        },
+        {
+          "id": "suj",
+          "label": "Sujidades",
+          "tipo": "select",
+          "opcoes": [
+            "apresentando sujidades",
+            "sem sujidades"
+          ]
+        },
+        {
+          "id": "conserv",
+          "label": "Conservação",
+          "tipo": "select",
+          "opcoes": [
+            "em regular estado de conservação",
+            "em deteriorado estado de conservação"
+          ]
+        },
+        {
+          "id": "marca",
+          "label": "Marca",
+          "tipo": "text"
+        },
+        {
+          "id": "modelo",
+          "label": "Modelo",
+          "tipo": "text"
+        },
+        {
+          "id": "cor",
+          "label": "Cor",
+          "tipo": "text"
+        },
+        {
+          "id": "funcionamento",
+          "label": "Funcionamento",
+          "tipo": "select",
+          "opcoes": [
+            "negativo",
+            "positivo",
+            "parcial"
+          ]
+        }
+      ],
+      "paragrafos_adicionais": [
+        {
+          "id": "Emprego/Uso",
+          "titulo": "Uso/Emprego",
+          "texto_padrao": "Objeto comumente utilizado no preparo de alimento, podendo ser utilizado em pesagem de entorpecentes."
+        },
+        {
+          "id": "Positivo THC",
+          "titulo": "Positivo THC",
+          "texto_padrao": "A superfície do objeto apresentava sujidades, as quais foram extraídas mediante contato com solvente e submetido a teste de cromatografia em camada delgada (CCD), resultando POSITIVO para THC (tetrahidrocanabinol)."
+        },
+        {
+          "id": "Negativo THC",
+          "titulo": "Negativo THC",
+          "texto_padrao": "A superfície do objeto apresentava sujidades, as quais foram extraídas mediante contato com solvente e submetido a teste de cromatografia em camada delgada (CCD), resultando NEGATIVO para THC (tetrahidrocanabinol)."
+        },
+        {
+          "id": "Positivo Cocaína",
+          "titulo": "Positivo Cocaína",
+          "texto_padrao": "A superfície do objeto apresentava sujidades, as quais foram extraídas mediante contato com solvente e submetido a teste de cromatografia em camada delgada (CCD), resultando POSITIVO para Cocaína."
+        },
+        {
+          "id": "Negativo Cocaína",
+          "titulo": "Negativo Cocaína",
+          "texto_padrao": "A superfície do objeto apresentava sujidades, as quais foram extraídas mediante contato com solvente e submetido a teste de cromatografia em camada delgada (CCD), resultando NEGATIVO para Cocaína."
+        }
+      ]
+    },
+    {
+      "id": "mini_balanca",
+      "nome": "Mini-Balança",
+      "icone": "⚖",
+      "modelo_descricao": "01 (uma) balança digital de bolso (pocket); [?usada: {usada},] [?suj: {suj},] [?conserv: {conserv},] [?marca: marca de fabricação {marca},] [?modelo: modelo {modelo},] [?cor: cor {cor},] de estrutura plástica sintética na cor prata e de prato retangular metálico; de capacidade nominal de 500g/0.1g; de dimensões de 12,2 cm x 6,3 cm x 1,5 cm; de funcionamento através de duas pilhas de AAA [?funcionamento: ; e o teste de funcionamento resultou {funcionamento}].",
+      "campos": [
+        {
+          "id": "usada",
+          "label": "Usada",
+          "tipo": "select",
+          "opcoes": [
+            "usada",
+            "nova"
+          ]
+        },
+        {
+          "id": "suj",
+          "label": "Sujidades",
+          "tipo": "select",
+          "opcoes": [
+            "apresentando sujidades",
+            "sem sujidades"
+          ]
+        },
+        {
+          "id": "conserv",
+          "label": "Conservação",
+          "tipo": "select",
+          "opcoes": [
+            "em regular estado de conservação",
+            "em deteriorado estado de conservação"
+          ]
+        },
+        {
+          "id": "marca",
+          "label": "Marca",
+          "tipo": "text"
+        },
+        {
+          "id": "modelo",
+          "label": "Modelo",
+          "tipo": "text"
+        },
+        {
+          "id": "cor",
+          "label": "Cor",
+          "tipo": "text"
+        },
+        {
+          "id": "funcionamento",
+          "label": "Funcionamento",
+          "tipo": "select",
+          "opcoes": [
+            "negativo",
+            "positivo",
+            "parcial"
+          ]
+        }
+      ],
+      "paragrafos_adicionais": [
+        {
+          "id": "Emprego/Uso",
+          "titulo": "Uso/Emprego",
+          "texto_padrao": "Objeto de uso doméstico, podendo ser utilizado em pesagem de entorpecentes."
+        },
+        {
+          "id": "Positivo THC",
+          "titulo": "Positivo THC",
+          "texto_padrao": "A superfície do objeto apresentava sujidades, as quais foram extraídas mediante contato com solvente e submetido a teste de cromatografia em camada delgada (CCD), resultando POSITIVO para THC (tetrahidrocanabinol)."
+        },
+        {
+          "id": "Negativo THC",
+          "titulo": "Negativo THC",
+          "texto_padrao": "A superfície do objeto apresentava sujidades, as quais foram extraídas mediante contato com solvente e submetido a teste de cromatografia em camada delgada (CCD), resultando NEGATIVO para THC (tetrahidrocanabinol)."
+        },
+        {
+          "id": "Positivo Cocaína",
+          "titulo": "Positivo Cocaína",
+          "texto_padrao": "A superfície do objeto apresentava sujidades, as quais foram extraídas mediante contato com solvente e submetido a teste de cromatografia em camada delgada (CCD), resultando POSITIVO para Cocaína."
+        },
+        {
+          "id": "Negativo Cocaína",
+          "titulo": "Negativo Cocaína",
+          "texto_padrao": "A superfície do objeto apresentava sujidades, as quais foram extraídas mediante contato com solvente e submetido a teste de cromatografia em camada delgada (CCD), resultando NEGATIVO para Cocaína."
+        }
+      ]
+    },
+    {
+      "id": "crlv_documento_papel",
+      "nome": "Documento em Papel / CRLV-e",
+      "icone": "📄",
+      "modelo_descricao": "01 (uma) folha de papel avulsa, formato {formato}[?dimensoes: ({dimensoes})], de cor {cor}[?dobras: com marcas de dobras {dobras}], contendo impressão {tipo_impressao} referente a um {tipo_doc}[?orgao_emissor: emitido por/pelo {orgao_emissor}][?nome_titular:, em nome de {nome_titular}][?veiculo_desc:, relativo ao veículo {veiculo_desc}][?placa:, de placa {placa}][?chassi:, chassi {chassi}]; verso {verso}.",
+      "campos": [
+        {
+          "id": "formato",
+          "label": "Formato do Papel",
+          "tipo": "text",
+          "placeholder": "ex: A4, ofício, carta"
+        },
+        {
+          "id": "dimensoes",
+          "label": "Dimensões (opcional)",
+          "tipo": "text",
+          "placeholder": "ex: aproximadamente 29,7 cm x 21 cm"
+        },
+        {
+          "id": "cor",
+          "label": "Cor do Papel",
+          "tipo": "text",
+          "placeholder": "ex: branca, parda"
+        },
+        {
+          "id": "dobras",
+          "label": "Marcas de Dobras (opcional)",
+          "tipo": "text",
+          "placeholder": "ex: transversais, longitudinais e transversais"
+        },
+        {
+          "id": "tipo_impressao",
+          "label": "Tipo de Impressão",
+          "tipo": "text",
+          "placeholder": "ex: em preto, colorida"
+        },
+        {
+          "id": "tipo_doc",
+          "label": "Tipo de Documento",
+          "tipo": "text",
+          "placeholder": "ex: Certificado de Registro e Licenciamento de Veículo em meio digital (CRLV-e)"
+        },
+        {
+          "id": "orgao_emissor",
+          "label": "Órgão / Plataforma Emissora",
+          "tipo": "text",
+          "placeholder": "ex: portal gov.br, Detran/SP"
+        },
+        {
+          "id": "nome_titular",
+          "label": "Nome do Titular / Proprietário",
+          "tipo": "text",
+          "placeholder": "ex: Mateus Henrique Santana"
+        },
+        {
+          "id": "veiculo_desc",
+          "label": "Descrição do Veículo (Marca/Modelo/Tipo)",
+          "tipo": "text",
+          "placeholder": "ex: uma motoneta Honda/Biz 125"
+        },
+        {
+          "id": "placa",
+          "label": "Placa",
+          "tipo": "text",
+          "placeholder": "ex: FDL5E17"
+        },
+        {
+          "id": "chassi",
+          "label": "Chassi (opcional)",
+          "tipo": "text",
+          "placeholder": "ex: 9C2JC4830RR002837"
+        },
+        {
+          "id": "verso",
+          "label": "Condição do Verso",
+          "tipo": "select",
+          "opcoes": [
+            "em branco",
+            "não visível",
+            "com impressões no verso"
+          ]
+        }
+      ],
+      "paragrafos_adicionais": []
     }
   ]
 }
